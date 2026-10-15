@@ -169,7 +169,6 @@ async function simpanProfilSiswa() {
     const btn = document.getElementById('btn-simpan-profil');
     const tempat = document.getElementById('edit-tempat-lahir').value.trim();
     const tgl = document.getElementById('edit-tgl-lahir').value;
-    const foto = document.getElementById('edit-foto').value.trim();
     const nohp = document.getElementById('edit-nohp').value.trim();
     const alamat = document.getElementById('edit-alamat').value.trim();
     const passBaru = document.getElementById('edit-password-siswa').value.trim();
@@ -177,82 +176,115 @@ async function simpanProfilSiswa() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
     btn.disabled = true;
 
-    let dataUpdate = { tempat_lahir: tempat, tgl_lahir: tgl, foto_profil: foto, no_hp: nohp, alamat: alamat };
-    if (passBaru !== '') {
-        dataUpdate.password = passBaru;
-    }
-
     try {
+        let publicUrlFoto = document.getElementById('edit-foto').value; // Foto default dari text input tersembunyi
+
+        // Jika ada file foto baru yang dipilih, unggah terlebih dahulu
+        if (fileFotoTerpilih) {
+            const statusEl = document.getElementById('foto-upload-status');
+            if(statusEl) statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah foto...';
+
+            const fileExt = fileFotoTerpilih.name.split('.').pop();
+            const fileName = `profil_${currentUser.nis}_${Date.now()}.${fileExt}`;
+            
+            // Unggah ke Supabase Storage (bucket: foto_profil)
+            publicUrlFoto = await uploadFileToSupabase(fileFotoTerpilih, 'foto_profil', fileName);
+            document.getElementById('edit-foto').value = publicUrlFoto;
+            fileFotoTerpilih = null; // Reset setelah berhasil unggah
+        }
+
+        let dataUpdate = { 
+            tempat_lahir: tempat, 
+            tgl_lahir: tgl, 
+            foto_profil: publicUrlFoto, // URL foto (baru atau lama)
+            no_hp: nohp, 
+            alamat: alamat 
+        };
+        
+        if (passBaru !== '') {
+            dataUpdate.password = passBaru;
+        }
+
+        // Simpan ke database Supabase, kunci utama menggunakan NIS
         const { error } = await db.from('tabel_siswa')
             .update(dataUpdate)
             .eq('nis', currentUser.nis);
 
         if (error) throw error;
 
+        // Perbarui data sesi saat ini
         currentUser.tempat_lahir = tempat;
         currentUser.tgl_lahir = tgl;
-        currentUser.foto_profil = foto;
+        currentUser.foto_profil = publicUrlFoto;
         currentUser.no_hp = nohp;
         currentUser.alamat = alamat;
         if (passBaru !== '') currentUser.password = passBaru;
 
-        updateFotoUI(foto);
+        // Perbarui UI Dasbor (Foto Profil Header dll)
+        updateFotoUI(publicUrlFoto);
         
         showToast('Profil berhasil diperbarui!');
         document.getElementById('edit-password-siswa').value = ''; 
+        
+        const statusEl = document.getElementById('foto-upload-status');
+        if(statusEl) statusEl.classList.add('hidden');
+        
+        // Tutup form setelah berhasil simpan
+        toggleEditProfil();
+
     } catch (error) {
         showToast('Gagal menyimpan profil!', true);
-        console.error(error);
+        console.error("Error Simpan Profil:", error);
+        
+        const statusEl = document.getElementById('foto-upload-status');
+        if(statusEl) {
+             let errorMsg = 'Gagal menyimpan.';
+             if (error.message && error.message.includes('row-level security')) {
+                errorMsg = 'Akses ditolak. Cek RLS Storage/Tabel.';
+             }
+             statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${errorMsg}`;
+             statusEl.className = 'text-[10px] text-red-500 font-bold mt-2 text-center block';
+        }
     } finally {
         btn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
         btn.disabled = false;
     }
 }
 
+
+let fileFotoTerpilih = null; // Tambahkan variabel global ini di luar fungsi
+
 const editFotoFileEl = document.getElementById('edit-foto-file');
 if (editFotoFileEl) {
-    editFotoFileEl.addEventListener('change', async function(e) {
+    editFotoFileEl.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file || !currentUser) return;
         
+        // Simpan file ke variabel global untuk di-upload nanti
+        fileFotoTerpilih = file;
+
+        // Buat URL sementara (local preview) dari file gambar
+        const objectUrl = URL.createObjectURL(file);
+        
+        // Tampilkan gambar di lingkaran preview Profil (Ganti gambar default/lama)
+        const pImg = document.getElementById('profil-foto-preview');
+        const pIco = document.getElementById('profil-icon');
+        
+        if (pImg) {
+            pImg.src = objectUrl;
+            pImg.style.display = 'block';
+            pImg.classList.remove('hidden');
+        }
+        if (pIco) {
+            pIco.style.display = 'none';
+            pIco.classList.add('hidden');
+        }
+
         const statusEl = document.getElementById('foto-upload-status');
-        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah foto...';
-        statusEl.className = 'text-[10px] text-teal-600 mt-1 font-bold';
-
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `profil_${currentUser.nis}_${Date.now()}.${fileExt}`;
-            const publicUrl = await uploadFileToSupabase(file, 'foto_profil', fileName);
-            
-            document.getElementById('edit-foto').value = publicUrl;
-            
-            document.getElementById('profil-foto-preview').style.display = 'block';
-            document.getElementById('profil-foto-preview').src = publicUrl;
-            document.getElementById('profil-foto-preview').classList.remove('hidden');
-            
-            document.getElementById('profil-icon').style.display = 'none';
-            document.getElementById('profil-icon').classList.add('hidden');
-
-            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Diunggah. Silakan Simpan Data!';
-            statusEl.className = 'text-[10px] text-green-600 font-bold mt-2 text-center block';
-            statusEl.classList.remove('hidden');
-            
-            setTimeout(() => { statusEl.classList.add('hidden'); }, 4000);
-            
-            const form = document.getElementById('form-edit-profil');
-            if (form && form.classList.contains('hidden')) {
-                toggleEditProfil();
-            }
-
-        } catch (error) {
-            let errorMsg = 'Gagal unggah foto.';
-            if (error.message && error.message.includes('row-level security')) {
-               errorMsg = 'Akses ditolak. Cek RLS Storage.';
-            }
-            statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${errorMsg}`;
-            statusEl.className = 'text-[10px] text-red-500 font-bold mt-2 text-center block';
-            statusEl.classList.remove('hidden');
-            console.error(error);
+        if(statusEl) {
+             statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Foto siap diunggah. Tekan Simpan Perubahan.';
+             statusEl.className = 'text-[10px] text-teal-600 mt-1 font-bold';
+             statusEl.classList.remove('hidden');
         }
     });
 }
