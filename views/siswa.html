@@ -424,16 +424,20 @@
     </div>
     
     <div class="flex flex-col items-center mt-1 mb-4 px-4 relative z-10">
-        <div class="w-28 h-28 rounded-full p-1 bg-white shadow-sm relative mb-4">
+        <!-- KOTAK AVATAR PROFIL (Diperbarui) -->
+        <div class="w-28 h-28 rounded-full p-1 bg-white shadow-sm relative mb-4 cursor-pointer" onclick="document.getElementById('edit-foto-file').click()">
             <div class="w-full h-full rounded-full overflow-hidden bg-gradient-to-b from-red-500 to-red-600 flex items-center justify-center relative">
+                <!-- Preview Gambar -->
                 <img id="profil-foto-preview" src="" onerror="this.style.display='none'; document.getElementById('profil-icon').style.display='block';" class="absolute inset-0 w-full h-full object-cover z-10 hidden">
+                <!-- Ikon Default -->
                 <i id="profil-icon" class="fas fa-user text-5xl text-white opacity-80"></i>
-            </div>
-            
-            <label for="edit-foto-file" class="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white border-[2.5px] border-white shadow-md cursor-pointer hover:bg-blue-700 hover:scale-105 transition-all z-20">
+            </div>            
+            <!-- Ikon Kamera Biru (Akan disembunyikan JS jika ada foto) -->
+            <div id="camera-badge-icon" class="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white border-[2.5px] border-white shadow-md transition-all z-20 hover:scale-105">
                 <i class="fas fa-camera text-xs"></i>
-            </label>
-            <input type="file" id="edit-foto-file" accept="image/*" class="hidden">
+            </div>           
+            <!-- Input File Tersembunyi -->
+            <input type="file" id="edit-foto-file" accept="image/png, image/jpeg, image/jpg" class="hidden">
             <input type="hidden" id="edit-foto">
         </div>
         <p class="text-[10px] text-teal-600 font-bold mb-2 hidden text-center" id="foto-upload-status"></p>
