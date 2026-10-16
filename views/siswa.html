@@ -448,39 +448,41 @@
     </div>
 
     <div class="px-4 mb-4">
-        <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 space-y-4">
-            <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+        <!-- PERBAIKAN 1: Padding dikurangi dari p-5 menjadi p-4, spasi antar item dari space-y-4 menjadi space-y-2.5 -->
+        <div class="bg-white rounded-3xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 space-y-2.5">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-50">
                 <div class="flex items-center gap-3">
-                    <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-id-card"></i></div>
-                    <span class="text-xs font-semibold text-gray-600">NIS</span>
+                    <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs"><i class="fas fa-id-card"></i></div>
+                    <span class="text-[11px] font-semibold text-gray-600">NIS</span>
                 </div>
-                <span class="text-sm font-bold text-gray-800" id="info-nis">...</span>
+                <span class="text-xs font-bold text-gray-800" id="info-nis">...</span>
             </div>
-            <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-50">
                 <div class="flex items-center gap-3">
-                    <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-briefcase"></i></div>
-                    <span class="text-xs font-semibold text-gray-600">Jurusan</span>
+                    <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs"><i class="fas fa-briefcase"></i></div>
+                    <span class="text-[11px] font-semibold text-gray-600">Jurusan</span>
                 </div>
-                <span class="text-sm font-bold text-gray-800" id="info-jurusan-detail">...</span>
+                <span class="text-xs font-bold text-gray-800" id="info-jurusan-detail">...</span>
             </div>
-            <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-50">
                 <div class="flex items-center gap-3">
-                    <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-graduation-cap"></i></div>
-                    <span class="text-xs font-semibold text-gray-600">Tahun Masuk</span>
+                    <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs"><i class="fas fa-graduation-cap"></i></div>
+                    <span class="text-[11px] font-semibold text-gray-600">Tahun Masuk</span>
                 </div>
-                <span class="text-sm font-bold text-gray-800" id="info-tahun">...</span>
+                <span class="text-xs font-bold text-gray-800" id="info-tahun">...</span>
             </div>
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-user-check"></i></div>
-                    <span class="text-xs font-semibold text-gray-600">Status</span>
+                    <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs"><i class="fas fa-user-check"></i></div>
+                    <span class="text-[11px] font-semibold text-gray-600">Status</span>
                 </div>
-                <span class="text-[10px] font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full" id="info-status">Aktif</span>
+                <span class="text-[9px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full" id="info-status">Aktif</span>
             </div>
         </div>
     </div>
     
     <div class="px-4 space-y-3">
+        <!-- Akordion Data Pribadi -->
         <button onclick="toggleEditProfil()" class="w-full bg-white rounded-2xl p-4.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex justify-between items-center group hover:bg-gray-50 transition-colors">
             <div class="flex items-center gap-4">
                 <div class="text-blue-600 text-lg w-6 text-center"><i class="far fa-user"></i></div>
@@ -493,6 +495,7 @@
             <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
             <h3 class="font-bold text-gray-800 mb-4 text-sm border-b pb-2">Perbarui Data Pribadi</h3>
             <div class="space-y-4">
+                <!-- (Input form tetap sama) -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Tempat, Tanggal Lahir</label>
                     <div class="flex gap-2">
@@ -512,9 +515,7 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Ubah Kata Sandi (Kosongkan jika tidak diubah)</label>
                     <input type="password" id="edit-password-siswa" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="••••••••">
                 </div>
-                <button id="btn-simpan-profil" onclick="simpanProfilSiswa()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-md mt-2 hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 text-sm">
-                    <i class="fas fa-save"></i> Simpan Perubahan
-                </button>
+                <!-- Tombol Simpan Profil dihapus dari sini -->
             </div>
         </div>
 
@@ -532,6 +533,13 @@
             </div>
             <i class="fas fa-chevron-right text-gray-300 text-sm group-hover:text-blue-500 transition-transform"></i>
         </button>
+        <!-- PERBAIKAN 2: Tombol Simpan dipindahkan ke luar, tepat di atas Navigation Bar agar selalu terlihat jelas. -->
+        <!-- Tombol ini sengaja disembunyikan (hidden) secara default, dan akan dipanggil oleh JavaScript saat foto dipilih atau saat akordion Data Pribadi dibuka. -->
+        <div id="sticky-btn-simpan-container" class="hidden mt-6 pb-2">
+             <button id="btn-simpan-profil-global" onclick="simpanProfilSiswa()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-[0_4px_15px_rgba(37,99,235,0.4)] hover:bg-blue-700 transition-all flex justify-center items-center gap-2 text-sm active:scale-95">
+                <i class="fas fa-save"></i> Simpan Semua Perubahan
+            </button>
+        </div>
     </div>
 </div>
 
