@@ -173,9 +173,14 @@ function loadProfilForm() {
     document.getElementById('edit-password-siswa').value = ''; 
 }
 
+// 3. Fungsi eksekusi utama saat tombol "Simpan Perubahan" diklik
 async function simpanProfilSiswa() {
     const btn = document.getElementById('btn-simpan-profil');
-    // ... (ambil input lainnya)
+    const tempat = document.getElementById('edit-tempat-lahir').value.trim();
+    const tgl = document.getElementById('edit-tgl-lahir').value;
+    const nohp = document.getElementById('edit-nohp').value.trim();
+    const alamat = document.getElementById('edit-alamat').value.trim();
+    const passBaru = document.getElementById('edit-password-siswa').value.trim();
     
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
     btn.disabled = true;
@@ -183,60 +188,67 @@ async function simpanProfilSiswa() {
     try {
         let publicUrlFoto = document.getElementById('edit-foto').value || '';
 
-        // 1. CEK JIKA ADA FOTO BARU YANG DIPILIH DARI MEMORI HP
+        // JIKA ADA FOTO BARU DI MEMORI, UNGGAH TERLEBIH DAHULU KE CLOUD
         if (window.fileFotoTerpilih) {
             const statusEl = document.getElementById('foto-upload-status');
-            if(statusEl) statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah foto ke Cloud...';
+            if (statusEl) statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah foto ke Cloud...';
 
             const fileExt = window.fileFotoTerpilih.name.split('.').pop();
             const fileName = `profil_${currentUser.nis}_${Date.now()}.${fileExt}`;
             
-            // Unggah ke Supabase
+            // Proses unggah foto
             publicUrlFoto = await uploadFileToSupabase(window.fileFotoTerpilih, 'foto_profil', fileName);
             document.getElementById('edit-foto').value = publicUrlFoto;
             
-            // Bersihkan memori HP setelah sukses upload
+            // Bersihkan memori setelah berhasil terunggah
             window.fileFotoTerpilih = null; 
         }
 
-        // 2. SIMPAN KE DATABASE
-        let dataUpdate = { /* ... variabel tempat_lahir, tgl_lahir, no_hp, alamat ... */ };
-        dataUpdate.foto_profil = publicUrlFoto; // Pastikan url dimasukkan
+        // SIAPKAN DATA UNTUK DISIMPAN KE DATABASE
+        let dataUpdate = { 
+            tempat_lahir: tempat, 
+            tgl_lahir: tgl, 
+            no_hp: nohp, 
+            alamat: alamat 
+        };
         
+        if (publicUrlFoto !== '') {
+            dataUpdate.foto_profil = publicUrlFoto;
+        }
+        if (passBaru !== '') {
+            dataUpdate.password = passBaru;
+        }
+        
+        // Simpan data ke tabel_siswa berdasarkan NIS
         const { error } = await db.from('tabel_siswa').update(dataUpdate).eq('nis', currentUser.nis);
         if (error) throw error;
 
-        // Perbarui data sesi saat ini
+        // PEMBARUAN BERHASIL: Update tampilan & data sesi
         currentUser.tempat_lahir = tempat;
         currentUser.tgl_lahir = tgl;
-        currentUser.foto_profil = publicUrlFoto;
         currentUser.no_hp = nohp;
         currentUser.alamat = alamat;
+        if (publicUrlFoto !== '') currentUser.foto_profil = publicUrlFoto;
         if (passBaru !== '') currentUser.password = passBaru;
 
-        // Perbarui UI Dasbor (Foto Profil Header dll)
+        // Perbarui semua ikon profil di dasbor dan menu
         updateFotoUI(publicUrlFoto);
         
         showToast('Profil berhasil diperbarui!');
         document.getElementById('edit-password-siswa').value = ''; 
         
         const statusEl = document.getElementById('foto-upload-status');
-        if(statusEl) statusEl.classList.add('hidden');
+        if (statusEl) statusEl.classList.add('hidden');
         
-        // Tutup form setelah berhasil simpan
+        // Tutup formulir edit profil secara otomatis
         toggleEditProfil();
 
     } catch (error) {
         showToast('Gagal menyimpan profil!', true);
         console.error("Error Simpan Profil:", error);
-        
         const statusEl = document.getElementById('foto-upload-status');
-        if(statusEl) {
-             let errorMsg = 'Gagal menyimpan.';
-             if (error.message && error.message.includes('row-level security')) {
-                errorMsg = 'Akses ditolak. Cek RLS Storage/Tabel.';
-             }
-             statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${errorMsg}`;
+        if (statusEl) {
+             statusEl.innerHTML = `<i class="fas fa-times-circle"></i> Terjadi kesalahan saat menyimpan data.`;
              statusEl.className = 'text-[10px] text-red-500 font-bold mt-2 text-center block';
         }
     } finally {
@@ -246,48 +258,49 @@ async function simpanProfilSiswa() {
 }
 
 
-// Deklarasi global agar file foto tidak hilang dari memori browser HP
-window.fileFotoTerpilih = null; 
+// 1. Variabel global agar foto tersimpan di memori HP sementara
+window.fileFotoTerpilih = null;
 
-const editFotoFileEl = document.getElementById('edit-foto-file');
-if (editFotoFileEl) {
-    editFotoFileEl.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        // 1. Simpan ke memori global
-        window.fileFotoTerpilih = file;
+// 2. Fungsi ini menangkap foto sesaat setelah dipilih dari galeri HP
+function handleFotoDipilih(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        // 2. Buat URL Preview Lokal
-        const objectUrl = URL.createObjectURL(file);
-        
-        // 3. Terapkan ke Lingkaran Profil
-        const pImg = document.getElementById('profil-foto-preview');
-        const pIco = document.getElementById('profil-icon');
-        const pCam = document.getElementById('camera-badge-icon'); // Ikon kamera biru
-        
-        if (pImg) {
-            pImg.src = objectUrl;
-            pImg.style.display = 'block';
-            pImg.classList.remove('hidden');
-        }
-        if (pIco) {
-            pIco.style.display = 'none';
-            pIco.classList.add('hidden');
-        }
-        // Sembunyikan ikon kamera karena foto berhasil dipratinjau
-        if (pCam) {
-            pCam.style.display = 'none';
-            pCam.classList.add('hidden');
-        }
+    // Simpan ke memori global
+    window.fileFotoTerpilih = file;
 
-        const statusEl = document.getElementById('foto-upload-status');
-        if(statusEl) {
-             statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Foto siap. Jangan lupa tekan "Simpan Perubahan" di bawah.';
-             statusEl.className = 'text-[10px] text-teal-600 mt-2 font-bold block text-center';
-             statusEl.classList.remove('hidden');
-        }
-    });
+    // Buat URL untuk preview (pratinjau) lokal
+    const objectUrl = URL.createObjectURL(file);
+
+    // Dapatkan elemen-elemen lingkaran profil
+    const pImg = document.getElementById('profil-foto-preview');
+    const pIco = document.getElementById('profil-icon');
+    const pCam = document.getElementById('camera-badge-icon');
+    
+    // Tampilkan foto di lingkaran dan sembunyikan ikon default
+    if (pImg) {
+        pImg.src = objectUrl;
+        pImg.style.display = 'block';
+        pImg.classList.remove('hidden');
+    }
+    if (pIco) {
+        pIco.style.display = 'none';
+        pIco.classList.add('hidden');
+    }
+    
+    // Sembunyikan ikon kamera biru agar terlihat rapi
+    if (pCam) {
+        pCam.style.display = 'none';
+        pCam.classList.add('hidden');
+    }
+
+    // Munculkan teks status
+    const statusEl = document.getElementById('foto-upload-status');
+    if (statusEl) {
+         statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Foto siap. Tekan "Simpan Perubahan" di bawah.';
+         statusEl.className = 'text-[10px] text-teal-600 mt-2 font-bold block text-center';
+         statusEl.classList.remove('hidden');
+    }
 }
 
 // ==========================================
