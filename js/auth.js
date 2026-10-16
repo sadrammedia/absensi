@@ -22,31 +22,40 @@ async function handleLogin() {
             .select('*')
             .eq('nis', idInput)
             .maybeSingle();
-
         if (siswa) {
             const pwSiswa = siswa.password || '123456';
             if (passInput !== pwSiswa) {
                 throw new Error("Kata Sandi Salah!");
             }
+            // --- LOGIKA DEVICE BINDING (DENGAN WHITELIST / PENGECUALIAN) ---            
+            // Apakah siswa ini memiliki tiket pengecualian (bypass)?
+            const isBypass = siswa.bypass_device === true;
 
-            if (siswa.device_id && siswa.device_id !== currentDeviceId) {
-                throw new Error("Akun ini terikat pada HP lain. Hubungi admin untuk reset HP.");
-            } else if (!siswa.device_id) {
+            // Kondisi 1: Akun belum pernah terikat HP manapun
+            if (!siswa.device_id) {
                 await db.from('tabel_siswa').update({ device_id: currentDeviceId }).eq('nis', idInput);
                 siswa.device_id = currentDeviceId;
             }
+            // Kondisi 2: HP berbeda, TAPI anak ini punya pengecualian (Whitelist)
+            else if (siswa.device_id !== currentDeviceId && isBypass) {
+                // Diam-diam update device_id dengan yang baru tanpa melemparkan pesan error
+                await db.from('tabel_siswa').update({ device_id: currentDeviceId }).eq('nis', idInput);
+                siswa.device_id = currentDeviceId;
+            }
+            // Kondisi 3: HP berbeda, dan anak ini TIDAK punya pengecualian (Strick Mode)
+            else if (siswa.device_id !== currentDeviceId && !isBypass) {
+                throw new Error("Akun ini terikat pada HP lain. Hubungi admin untuk reset HP.");
+            }
+            // -------------------------------------------------------------
 
             currentUser = { role: 'siswa', ...siswa };
             localStorage.setItem('app_session', JSON.stringify(currentUser));
-
             await showScreen('screen-mobile'); 
             setupSiswaDashboard(currentUser);  
             setTimeout(() => { cekUlangTahun(currentUser); }, 1500);
             return;
         }
-
         throw new Error("NIS atau Kata Sandi tidak terdaftar!");
-
     } catch (err) {
         console.error(err);
         errText.innerHTML = `<i class="fas fa-exclamation-triangle mr-1"></i> ${err.message || "Gagal masuk."}`;
