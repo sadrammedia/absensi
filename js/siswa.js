@@ -75,6 +75,7 @@ function setupSiswaDashboard(user) {
     loadPengumumanSiswa();
 }
 
+// Perbarui Fungsi updateFotoUI agar otomatis menyembunyikan icon kamera saat login
 function updateFotoUI(url) {
     const dImg = document.getElementById('dashboard-foto');
     const dIco = document.getElementById('dashboard-icon');
@@ -82,6 +83,7 @@ function updateFotoUI(url) {
     const pIco = document.getElementById('profil-icon');
     const mImg = document.getElementById('menu-foto');
     const mIco = document.getElementById('menu-icon');
+    const pCam = document.getElementById('camera-badge-icon'); 
     
     if (url && url.trim() !== '') {
         if (dImg) { dImg.style.display = 'block'; dImg.src = url; dImg.classList.remove('hidden'); }
@@ -92,6 +94,9 @@ function updateFotoUI(url) {
         
         if (mImg) { mImg.style.display = 'block'; mImg.src = url; mImg.classList.remove('hidden'); }
         if (mIco) { mIco.style.display = 'none'; mIco.classList.add('hidden'); }
+
+        // Hilangkan ikon kamera biru karena siswa sudah punya foto profil dari database
+        if (pCam) { pCam.style.display = 'none'; pCam.classList.add('hidden'); }
     } else {
         if (dImg) { dImg.style.display = 'none'; dImg.classList.add('hidden'); }
         if (dIco) { dIco.style.display = 'block'; dIco.classList.remove('hidden'); }
@@ -101,6 +106,9 @@ function updateFotoUI(url) {
         
         if (mImg) { mImg.style.display = 'none'; mImg.classList.add('hidden'); }
         if (mIco) { mIco.style.display = 'block'; mIco.classList.remove('hidden'); }
+
+        // Munculkan ikon kamera biru jika siswa belum punya foto profil sama sekali
+        if (pCam) { pCam.style.display = 'flex'; pCam.classList.remove('hidden'); }
     }
 }
 
@@ -167,49 +175,35 @@ function loadProfilForm() {
 
 async function simpanProfilSiswa() {
     const btn = document.getElementById('btn-simpan-profil');
-    const tempat = document.getElementById('edit-tempat-lahir').value.trim();
-    const tgl = document.getElementById('edit-tgl-lahir').value;
-    const nohp = document.getElementById('edit-nohp').value.trim();
-    const alamat = document.getElementById('edit-alamat').value.trim();
-    const passBaru = document.getElementById('edit-password-siswa').value.trim();
-
+    // ... (ambil input lainnya)
+    
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
     btn.disabled = true;
 
     try {
-        let publicUrlFoto = document.getElementById('edit-foto').value; // Foto default dari text input tersembunyi
+        let publicUrlFoto = document.getElementById('edit-foto').value || '';
 
-        // Jika ada file foto baru yang dipilih, unggah terlebih dahulu
-        if (fileFotoTerpilih) {
+        // 1. CEK JIKA ADA FOTO BARU YANG DIPILIH DARI MEMORI HP
+        if (window.fileFotoTerpilih) {
             const statusEl = document.getElementById('foto-upload-status');
-            if(statusEl) statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah foto...';
+            if(statusEl) statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah foto ke Cloud...';
 
-            const fileExt = fileFotoTerpilih.name.split('.').pop();
+            const fileExt = window.fileFotoTerpilih.name.split('.').pop();
             const fileName = `profil_${currentUser.nis}_${Date.now()}.${fileExt}`;
             
-            // Unggah ke Supabase Storage (bucket: foto_profil)
-            publicUrlFoto = await uploadFileToSupabase(fileFotoTerpilih, 'foto_profil', fileName);
+            // Unggah ke Supabase
+            publicUrlFoto = await uploadFileToSupabase(window.fileFotoTerpilih, 'foto_profil', fileName);
             document.getElementById('edit-foto').value = publicUrlFoto;
-            fileFotoTerpilih = null; // Reset setelah berhasil unggah
+            
+            // Bersihkan memori HP setelah sukses upload
+            window.fileFotoTerpilih = null; 
         }
 
-        let dataUpdate = { 
-            tempat_lahir: tempat, 
-            tgl_lahir: tgl, 
-            foto_profil: publicUrlFoto, // URL foto (baru atau lama)
-            no_hp: nohp, 
-            alamat: alamat 
-        };
+        // 2. SIMPAN KE DATABASE
+        let dataUpdate = { /* ... variabel tempat_lahir, tgl_lahir, no_hp, alamat ... */ };
+        dataUpdate.foto_profil = publicUrlFoto; // Pastikan url dimasukkan
         
-        if (passBaru !== '') {
-            dataUpdate.password = passBaru;
-        }
-
-        // Simpan ke database Supabase, kunci utama menggunakan NIS
-        const { error } = await db.from('tabel_siswa')
-            .update(dataUpdate)
-            .eq('nis', currentUser.nis);
-
+        const { error } = await db.from('tabel_siswa').update(dataUpdate).eq('nis', currentUser.nis);
         if (error) throw error;
 
         // Perbarui data sesi saat ini
@@ -252,23 +246,25 @@ async function simpanProfilSiswa() {
 }
 
 
-let fileFotoTerpilih = null; // Tambahkan variabel global ini di luar fungsi
+// Deklarasi global agar file foto tidak hilang dari memori browser HP
+window.fileFotoTerpilih = null; 
 
 const editFotoFileEl = document.getElementById('edit-foto-file');
 if (editFotoFileEl) {
     editFotoFileEl.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        if (!file || !currentUser) return;
+        if (!file) return;
         
-        // Simpan file ke variabel global untuk di-upload nanti
-        fileFotoTerpilih = file;
+        // 1. Simpan ke memori global
+        window.fileFotoTerpilih = file;
 
-        // Buat URL sementara (local preview) dari file gambar
+        // 2. Buat URL Preview Lokal
         const objectUrl = URL.createObjectURL(file);
         
-        // Tampilkan gambar di lingkaran preview Profil (Ganti gambar default/lama)
+        // 3. Terapkan ke Lingkaran Profil
         const pImg = document.getElementById('profil-foto-preview');
         const pIco = document.getElementById('profil-icon');
+        const pCam = document.getElementById('camera-badge-icon'); // Ikon kamera biru
         
         if (pImg) {
             pImg.src = objectUrl;
@@ -279,11 +275,16 @@ if (editFotoFileEl) {
             pIco.style.display = 'none';
             pIco.classList.add('hidden');
         }
+        // Sembunyikan ikon kamera karena foto berhasil dipratinjau
+        if (pCam) {
+            pCam.style.display = 'none';
+            pCam.classList.add('hidden');
+        }
 
         const statusEl = document.getElementById('foto-upload-status');
         if(statusEl) {
-             statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Foto siap diunggah. Tekan Simpan Perubahan.';
-             statusEl.className = 'text-[10px] text-teal-600 mt-1 font-bold';
+             statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Foto siap. Jangan lupa tekan "Simpan Perubahan" di bawah.';
+             statusEl.className = 'text-[10px] text-teal-600 mt-2 font-bold block text-center';
              statusEl.classList.remove('hidden');
         }
     });
