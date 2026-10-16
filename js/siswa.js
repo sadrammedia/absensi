@@ -814,7 +814,12 @@ async function processAbsenToCloud() {
         if (currentAbsenType === 'masuk') {
             if (existData && existData.jam_masuk) {
                 showToast('Anda sudah absen masuk hari ini!', true);
+            } else if (existData && !existData.jam_masuk) {
+                // Kasus langka: Sudah ada baris (mungkin dari absen pulang duluan), lalu mau absen masuk
+                // Ini dicegah karena tidak logis
+                showToast('Gagal: Waktu absen masuk sudah terlewat.', true);
             } else {
+                // Normal: Buat baris absen masuk baru
                 const payload = {
                     nis: currentUser.nis,
                     nama: currentUser.nama,
@@ -827,26 +832,43 @@ async function processAbsenToCloud() {
 
                 const { error } = await db.from('tabel_presensi').insert([payload]);
                 if (error) throw error;
-                // Pemicu suara & getar sukses masuk
                 playBeepSuccess();
                 triggerHapticSuccess();
                 showToast('Absen Masuk Berhasil!');
             }
         } else { 
-            if (!existData) {
-                showToast('Gagal: Anda belum absen masuk hari ini.', true);
-            } else if (existData.jam_pulang) {
+            // ALUR ABSEN PULANG
+            if (existData && existData.jam_pulang) {
                 showToast('Anda sudah absen pulang hari ini!', true);
-            } else {
+            } else if (existData && !existData.jam_pulang) {
+                // Normal: Sudah absen masuk pagi harinya, tinggal update jam pulang
                 const payload = { jam_pulang: jamSekarang, status_pulang: 'Hadir' };
                 if (urlFotoBukti) payload.foto_pulang = urlFotoBukti;
 
                 const { error } = await db.from('tabel_presensi').update(payload).eq('id', existData.id); 
                 if (error) throw error;
-                // Pemicu suara & getar sukses pulang
                 playBeepSuccess();
                 triggerHapticSuccess();
                 showToast('Absen Pulang Berhasil!');
+            } else if (!existData) {
+                // KONDISI BARU: Belum absen masuk sama sekali, tapi maksa absen pulang di sore hari
+                // Kita buatkan baris INSERT baru, tapi biarkan jam_masuk kosong
+                const payload = {
+                    nis: currentUser.nis,
+                    nama: currentUser.nama,
+                    kelas: currentUser.kelas || '-',
+                    tanggal: tglHariIni,
+                    jam_pulang: jamSekarang,
+                    status_pulang: 'Hadir'
+                };
+                if (urlFotoBukti) payload.foto_pulang = urlFotoBukti;
+
+                const { error } = await db.from('tabel_presensi').insert([payload]);
+                if (error) throw error;
+                
+                playBeepSuccess();
+                triggerHapticSuccess();
+                showToast('Absen Pulang Berhasil (Tanpa absen masuk)!');
             }
         }
     } catch (err) {
@@ -880,28 +902,43 @@ async function triggerAbsenFAB() {
     const tglHariIni = `${yyyy}-${mm}-${dd}`;
 
     try {
+        // Ambil pengaturan cloud untuk batas jam (jika ada)
+        let batasAkhirMasuk = "12:00"; // default fallback jika cloud gagal
+        try {
+            const { data: peng } = await db.from('tabel_pengaturan').select('jam_masuk_akhir').limit(1).maybeSingle();
+            if (peng && peng.jam_masuk_akhir) batasAkhirMasuk = peng.jam_masuk_akhir;
+        } catch (e) { }
+
+        const jamSekarang = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
+
         const { data: existData } = await db.from('tabel_presensi')
             .select('*')
             .eq('nis', currentUser.nis)
             .eq('tanggal', tglHariIni)
             .maybeSingle();
 
-        // 1. Jika belum ada catatan absen atau belum ada jam masuk -> Absen Masuk
-        if (!existData || !existData.jam_masuk) {
-            openScanner('masuk');
-        } 
-        // 2. Jika sudah absen masuk tetapi belum absen pulang -> Otomatis Absen Pulang
+        // KONDISI 1: Belum ada data absen sama sekali hari ini
+        if (!existData) {
+            // Cek apakah ini masih pagi atau sudah sore
+            if (jamSekarang > batasAkhirMasuk) {
+                // Sudah lewat jam masuk, paksa buka absen PULANG
+                openScanner('pulang');
+            } else {
+                // Masih pagi, buka absen MASUK
+                openScanner('masuk');
+            }
+        }
+        // KONDISI 2: Sudah absen masuk (atau ada baris data), tetapi belum absen pulang
         else if (!existData.jam_pulang) {
             openScanner('pulang');
         } 
-        // 3. Jika masuk & pulang sudah lengkap
+        // KONDISI 3: Data masuk dan pulang sudah terisi
         else {
-            showToast('Presensi Anda hari ini sudah lengkap (Masuk & Pulang). Terima kasih!', false);
+            showToast('Presensi Anda hari ini sudah tuntas. Terima kasih!', false);
         }
     } catch (err) {
         console.error("Gagal memeriksa status FAB:", err);
-        // Fallback default jika koneksi cek lambat
-        openScanner('masuk');
+        openScanner('masuk'); // Fallback aman
     }
 }
 
@@ -1267,6 +1304,9 @@ async function refreshDashboardSmartCard() {
     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(dateObj.getDate()).padStart(2, '0');
     const tglHariIni = `${yyyy}-${mm}-${dd}`;
+    
+    // Ambil jam saat ini untuk logika peringatan sore hari
+    const jamSekarangNum = dateObj.getHours();
 
     try {
         const { data: existData } = await db.from('tabel_presensi')
@@ -1275,8 +1315,8 @@ async function refreshDashboardSmartCard() {
             .eq('tanggal', tglHariIni)
             .maybeSingle();
 
-        // Status 1: Belum Masuk
-        if (!existData || !existData.jam_masuk) {
+        // 1. Belum Presensi Sama Sekali
+        if (!existData) {
             elTitle.innerText = "Belum Presensi";
             if (elBadge) {
                 elBadge.innerText = "Belum Masuk";
@@ -1288,21 +1328,8 @@ async function refreshDashboardSmartCard() {
             elValPulang.innerText = "--:--";
             elSubPulang.innerText = "Belum Dibuka";
         }
-        // Status 2: Sudah Masuk, Belum Pulang
-        else if (existData.jam_masuk && !existData.jam_pulang) {
-            elTitle.innerText = "Hadir di Sekolah";
-            if (elBadge) {
-                elBadge.innerText = "Sudah Masuk";
-                elBadge.className = "text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60";
-            }
-            if (elDot) elDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-            elValMasuk.innerText = existData.jam_masuk;
-            elSubMasuk.innerText = "Tercatat di Server";
-            elValPulang.innerText = "--:--";
-            elSubPulang.innerText = "Menunggu Kepulangan";
-        }
-        // Status 3: Lengkap Masuk & Pulang
-        else {
+        // 2. Tuntas (Keduanya Terisi)
+        else if (existData.jam_masuk && existData.jam_pulang) {
             elTitle.innerText = "Presensi Selesai";
             if (elBadge) {
                 elBadge.innerText = "Tuntas";
@@ -1313,6 +1340,35 @@ async function refreshDashboardSmartCard() {
             elSubMasuk.innerText = "Hadir";
             elValPulang.innerText = existData.jam_pulang;
             elSubPulang.innerText = "Tuntas";
+        }
+        // 3. Hanya Absen Masuk atau Hanya Absen Pulang
+        else {
+            const hasMasuk = !!existData.jam_masuk;
+            const hasPulang = !!existData.jam_pulang;
+
+            elValMasuk.innerText = hasMasuk ? existData.jam_masuk : "--:--";
+            elSubMasuk.innerText = hasMasuk ? "Tercatat di Server" : "Lupa Absen Masuk";
+            
+            elValPulang.innerText = hasPulang ? existData.jam_pulang : "--:--";
+            elSubPulang.innerText = hasPulang ? "Tercatat di Server" : "Menunggu Kepulangan";
+
+            // Peringatan: Jika sudah lewat jam 16:00 tapi data masih bolong
+            if (jamSekarangNum >= 16) {
+                elTitle.innerText = "Data Tidak Lengkap";
+                if (elBadge) {
+                    elBadge.innerText = "Wajib Lapor";
+                    elBadge.className = "text-[10px] font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200/60 animate-pulse";
+                }
+                if (elDot) elDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+            } else {
+                // Jika masih siang dan wajar belum absen pulang
+                elTitle.innerText = hasMasuk ? "Hadir di Sekolah" : "Hanya Absen Pulang";
+                if (elBadge) {
+                    elBadge.innerText = hasMasuk ? "Sudah Masuk" : "Data Bolong";
+                    elBadge.className = "text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60";
+                }
+                if (elDot) elDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+            }
         }
     } catch (e) {
         console.error("Gagal refresh smart card status:", e);
