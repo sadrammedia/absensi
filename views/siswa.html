@@ -2,30 +2,28 @@
 <div id="tab-dashboard" class="flex-1 custom-scroll overflow-y-auto overflow-x-hidden w-full max-w-full pb-36 bg-[#f8fafc]">
     <!-- 1. Hero Header Terpadu (Customizable Background) -->
     <div id="hero-header-siswa" class="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 text-white pt-6 pb-14 px-4 rounded-b-[2rem] relative overflow-hidden shadow-md w-full max-w-full box-border bg-cover bg-center">
-        <!-- Overlay gelap agar teks putih tetap terbaca walau background gambarnya terang -->
+        <!-- Overlay gelap -->
         <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-0 transition-all duration-500" id="hero-overlay"></div>
 
         <!-- Baris Profil & Ikon Kanan -->
         <div class="flex justify-between items-start relative z-10 mb-4">
             <div class="flex items-center gap-3">
-                <!-- Foto Profil Diperbesar Sedikit -->
-                <div class="w-12 h-12 md:w-14 md:h-14 rounded-full p-0.5 bg-white/20 backdrop-blur-md border border-white/40 shadow-inner flex items-center justify-center relative shrink-0 overflow-hidden">
+                <!-- PERBAIKAN 3: Bentuk foto dikembalikan menjadi rounded-2xl (melengkung sedikit seperti sebelumnya), bukan bulat penuh (rounded-full) -->
+                <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl p-0.5 bg-white/20 backdrop-blur-md border border-white/40 shadow-inner flex items-center justify-center relative shrink-0 overflow-hidden">
                     <img id="dashboard-foto" src="" onerror="this.style.display='none'; document.getElementById('dashboard-icon').style.display='block';" class="absolute inset-0 w-full h-full object-cover z-10 hidden">
                     <i id="dashboard-icon" class="fas fa-user text-white text-xl"></i>
                 </div>
-                <div class="min-w-0">
-                    <!-- 1. Sapaan Halo + Nama Pendek + Emoji Tangan -->
-                    <h2 class="font-extrabold text-sm md:text-base leading-tight text-white flex items-center gap-1.5 shadow-sm">
+                <!-- PERBAIKAN 2: Spasi vertikal teks dirapatkan (menghapus mt-1 menjadi leading-tight/snug) -->
+                <div class="min-w-0 flex flex-col justify-center">
+                    <h2 class="font-extrabold text-sm md:text-base leading-none text-white flex items-center gap-1.5 shadow-sm mb-0.5">
                         <span class="text-yellow-300">Halo,</span> <span id="siswa-name-short" class="truncate max-w-[130px] md:max-w-[160px] drop-shadow-md">Memuat...</span> <span class="origin-bottom-right animate-wave">👋</span>
                     </h2>
-                    <!-- 2. Kata Motivasi Harian -->
-                    <p class="text-[10px] md:text-[11px] text-gray-100 font-medium mt-1 line-clamp-1 italic drop-shadow-md" id="siswa-quote-harian">Mencari inspirasi hari ini...</p>
-                    <!-- 3. Identitas: Kelas | NIS -->
-                    <p class="text-[9px] md:text-[10px] text-gray-300 font-bold mt-1.5 truncate tracking-wide drop-shadow-md" id="siswa-identitas-dash">- | -</p>
+                    <p class="text-[10px] md:text-[11px] text-gray-100 font-medium leading-tight line-clamp-1 italic drop-shadow-md" id="siswa-quote-harian">Mencari inspirasi hari ini...</p>
+                    <p class="text-[9px] md:text-[10px] text-gray-300 font-bold leading-tight truncate tracking-wide drop-shadow-md mt-0.5" id="siswa-identitas-dash">- | -</p>
                 </div>
             </div>
             
-            <!-- 4. Ikon Notifikasi & Pengaturan (Diperkecil menjadi w-7 h-7) -->
+            <!-- Ikon Notifikasi & Pengaturan -->
             <div class="flex items-center gap-2 shrink-0">
                 <button onclick="switchTabMobile('pengumuman')" class="w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-black/40 transition-all relative shadow-sm">
                     <i class="far fa-bell text-xs"></i>
@@ -37,15 +35,15 @@
             </div>
         </div>
 
-        <!-- Info Tanggal & Jam Digital (Desain Kapsul Putih) -->
-        <div class="bg-white/95 backdrop-blur-sm rounded-xl px-4 py-2.5 relative z-10 flex justify-between items-center shadow-md mx-1 mt-5 border border-white/50">
-            <div class="flex items-center gap-2 text-blue-600">
-                <i class="far fa-calendar-alt text-sm"></i>
-                <span class="font-bold text-[11px] md:text-xs text-gray-800" id="tanggal-hari-ini">-</span>
+        <!-- PERBAIKAN 1: Info Tanggal dibuat transparan (kaca) agar tidak putih pekat, dan teks dipaksa tetap terang (text-white/text-blue-100) sehingga kebal Dark Mode -->
+        <div class="bg-white/10 backdrop-blur-md rounded-xl px-4 py-2.5 relative z-10 flex justify-between items-center shadow-sm mx-1 mt-5 border border-white/20">
+            <div class="flex items-center gap-2 text-white">
+                <i class="far fa-calendar-alt text-sm drop-shadow-md"></i>
+                <span class="font-bold text-[11px] md:text-xs text-white drop-shadow-md" id="tanggal-hari-ini">-</span>
             </div>
-            <div class="flex items-center gap-2 text-blue-600">
-                <i class="far fa-clock text-sm"></i>
-                <span id="live-clock" class="font-bold text-[11px] md:text-xs text-gray-800 tracking-wider font-mono bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+            <div class="flex items-center gap-2 text-white">
+                <i class="far fa-clock text-sm drop-shadow-md"></i>
+                <span id="live-clock" class="font-bold text-[11px] md:text-xs text-white tracking-wider font-mono bg-white/20 px-2 py-0.5 rounded-md border border-white/30 drop-shadow-md">
                     --:--:--
                 </span>
             </div>
