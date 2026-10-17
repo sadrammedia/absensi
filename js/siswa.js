@@ -1,33 +1,36 @@
 // ==========================================
 // 1. TAMPILAN DASHBOARD SISWA & PROFIL
 // ==========================================
-
 function setupSiswaDashboard(user) {
-    const elSiswaName = document.getElementById('siswa-name');
-    if (elSiswaName) elSiswaName.innerText = user.nama;
-    
-    const elKelasJurusan = document.getElementById('siswa-kelas-jurusan');
-    if (elKelasJurusan) {
-        const tingkat = user.tingkat || '-';
-        const jurusan = user.id_jurusan || '-';
-        const kelas = user.kelas || '-';
-        elKelasJurusan.innerText = `Kelas ${tingkat} - ${jurusan} (${kelas})`;
-    }
-
     const elProfilName = document.getElementById('profil-name');
     if (elProfilName) elProfilName.innerText = user.nama;
     
-    const elProfilJurusan = document.getElementById('profil-jurusan');
-    if (elProfilJurusan) elProfilJurusan.innerText = `${user.tingkat || "-"} ${user.id_jurusan || "-"}`;
-    
     const elMenuName = document.getElementById('menu-name');
     if (elMenuName) elMenuName.innerText = user.nama;
+    
+    // --- KODE BARU: Nama Pendek & Identitas ---
+    const elSiswaNameShort = document.getElementById('siswa-name-short');
+    if (elSiswaNameShort) {
+        // Ambil kata pertama saja dari nama lengkap
+        const namaPendek = user.nama ? user.nama.split(' ')[0] : 'Siswa';
+        elSiswaNameShort.innerText = namaPendek;
+    }
+
+    const elIdentitasDash = document.getElementById('siswa-identitas-dash');
+    if (elIdentitasDash) {
+        const kelas = user.kelas || '-';
+        const nis = user.nis || '-';
+        elIdentitasDash.innerText = `${kelas} | ${nis}`;
+    }
+    // ------------------------------------------
+
+    const elProfilJurusan = document.getElementById('profil-jurusan');
+    if (elProfilJurusan) elProfilJurusan.innerText = `${user.tingkat || "-"} ${user.id_jurusan || "-"}`;
     const elMenuKelas = document.getElementById('menu-kelas');
     if (elMenuKelas) elMenuKelas.innerText = `${user.kelas || "-"} ${user.id_jurusan || "-"}`;
     
     const elInfoNis = document.getElementById('info-nis');
     if (elInfoNis) elInfoNis.innerText = user.nis || "-";
-    
     const elInfoJurusanDetail = document.getElementById('info-jurusan-detail');
     if (elInfoJurusanDetail) elInfoJurusanDetail.innerText = user.id_jurusan || "-";
     
@@ -58,7 +61,6 @@ function setupSiswaDashboard(user) {
         elTanggal.innerText = new Date().toLocaleDateString('id-ID', options);
     }
 
-    // Panggilan showScreen('screen-mobile') dihapus dari sini
     switchTabMobile('dashboard');
     
     const container = document.getElementById('app-container');
@@ -73,6 +75,55 @@ function setupSiswaDashboard(user) {
     loadJadwalDashboardHariIni();
     loadStatistikKehadiranBulanIni();
     loadPengumumanSiswa();
+    
+    // --- PANGGIL FUNGSI BARU ---
+    terapkanPengaturanDashboardSiswa();
+}
+
+async function terapkanPengaturanDashboardSiswa() {
+    try {
+        // 1. Ambil pengaturan untuk Background Kustom Siswa
+        let pengaturan = typeof cachedPengaturan !== 'undefined' ? cachedPengaturan : null;
+        if (!pengaturan) {
+            const { data } = await db.from('tabel_pengaturan').select('*').limit(1).maybeSingle();
+            pengaturan = data;
+            if (typeof cachedPengaturan !== 'undefined') cachedPengaturan = data;
+        }
+
+        const headerHero = document.getElementById('hero-header-siswa');
+        const overlay = document.getElementById('hero-overlay');
+        
+        if (headerHero && pengaturan && pengaturan.bg_siswa_url) {
+            // Hapus warna bawaan dan ganti dengan gambar
+            headerHero.classList.remove('from-blue-600', 'via-indigo-600', 'to-violet-700');
+            headerHero.style.backgroundImage = `url('${pengaturan.bg_siswa_url}')`;
+            // Gelapkan overlay agar teks putih tetap terbaca kontras di atas gambar
+            if (overlay) overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 z-0 transition-opacity';
+        } else if (headerHero) {
+            // Kembalikan ke warna bawaan jika url kosong
+            headerHero.style.backgroundImage = '';
+            headerHero.classList.add('from-blue-600', 'via-indigo-600', 'to-violet-700');
+            if (overlay) overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-0 transition-opacity';
+        }
+
+        // 2. Ambil Quotes Acak Harian dari tabel_quotes
+        const quoteEl = document.getElementById('siswa-quote-harian');
+        if (quoteEl) {
+            const { data: quotesData, error } = await db.from('tabel_quotes').select('kutipan');
+            
+            if (!error && quotesData && quotesData.length > 0) {
+                // Trik pintar: Gunakan rumus hari dalam setahun agar quote berganti 1x sehari, 
+                // tapi tidak berubah-ubah jika siswa me-refresh aplikasi di hari yang sama.
+                const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+                const index = dayOfYear % quotesData.length;
+                quoteEl.innerText = quotesData[index].kutipan;
+            } else {
+                quoteEl.innerText = "Semangat selalu untuk hari ini!";
+            }
+        }
+    } catch (e) {
+        console.error("Gagal menerapkan pengaturan dashboard siswa:", e);
+    }
 }
 
 // Perbarui Fungsi updateFotoUI agar otomatis menyembunyikan icon kamera saat login
