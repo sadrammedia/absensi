@@ -437,3 +437,7 @@ input[type="password"]::-ms-clear {
 .dark #screen-mobile {
     background-color: #0f172a !important;
 }
+
+/* ------------------------------- */
+@keyframes wave-hand { 0% { transform: rotate(0deg); } 20% { transform: rotate(14deg); } 40% { transform: rotate(-8deg); } 60% { transform: rotate(14deg); } 80% { transform: rotate(-4deg); } 100% { transform: rotate(0deg); } }
+.animate-wave { animation: wave-hand 2.5s infinite; transform-origin: 70% 70%; display: inline-block; }
