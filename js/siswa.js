@@ -8,11 +8,19 @@ function setupSiswaDashboard(user) {
     const elMenuName = document.getElementById('menu-name');
     if (elMenuName) elMenuName.innerText = user.nama;
     
-    // --- KODE BARU: Nama Pendek & Identitas ---
+    // --- KODE BARU: Nama Pendek yang Cerdas ---
     const elSiswaNameShort = document.getElementById('siswa-name-short');
     if (elSiswaNameShort) {
-        // Ambil kata pertama saja dari nama lengkap
-        const namaPendek = user.nama ? user.nama.split(' ')[0] : 'Siswa';
+        let namaPendek = 'Siswa';
+        if (user.nama) {
+            const pecahNama = user.nama.trim().split(' ');
+            // PERBAIKAN 4: Jika kata pertama terlalu pendek (misal "M." atau "Tb.") dan ada kata kedua, gabungkan keduanya.
+            if (pecahNama[0].length <= 2 && pecahNama.length > 1) {
+                namaPendek = `${pecahNama[0]} ${pecahNama[1]}`;
+            } else {
+                namaPendek = pecahNama[0];
+            }
+        }
         elSiswaNameShort.innerText = namaPendek;
     }
 
