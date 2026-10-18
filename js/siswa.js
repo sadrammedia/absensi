@@ -90,7 +90,6 @@ function setupSiswaDashboard(user) {
 
 async function terapkanPengaturanDashboardSiswa() {
     try {
-        // 1. Ambil pengaturan untuk Background Kustom Siswa
         let pengaturan = typeof cachedPengaturan !== 'undefined' ? cachedPengaturan : null;
         if (!pengaturan) {
             const { data } = await db.from('tabel_pengaturan').select('*').limit(1).maybeSingle();
@@ -101,27 +100,38 @@ async function terapkanPengaturanDashboardSiswa() {
         const headerHero = document.getElementById('hero-header-siswa');
         const overlay = document.getElementById('hero-overlay');
         
-        if (headerHero && pengaturan && pengaturan.bg_siswa_url) {
-            // Hapus warna bawaan dan ganti dengan gambar
-            headerHero.classList.remove('from-blue-600', 'via-indigo-600', 'to-violet-700');
-            headerHero.style.backgroundImage = `url('${pengaturan.bg_siswa_url}')`;
-            // Gelapkan overlay agar teks putih tetap terbaca kontras di atas gambar
-            if (overlay) overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 z-0 transition-opacity';
-        } else if (headerHero) {
-            // Kembalikan ke warna bawaan jika url kosong
+        if (headerHero && pengaturan) {
+            const tipeBg = pengaturan.bg_siswa_tipe || 'default';
+            
+            // 1. Reset class bawaan terlebih dahulu
+            headerHero.className = 'text-white pt-6 pb-12 px-4 rounded-b-[2rem] relative overflow-hidden shadow-md w-full max-w-full box-border bg-cover bg-center';
             headerHero.style.backgroundImage = '';
-            headerHero.classList.add('from-blue-600', 'via-indigo-600', 'to-violet-700');
-            if (overlay) overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-0 transition-opacity';
+
+            // 2. Eksekusi sesuai tipe pilihan Admin
+            if (tipeBg === 'gambar' && pengaturan.bg_siswa_url) {
+                headerHero.style.backgroundImage = `url('${pengaturan.bg_siswa_url}')`;
+                // Mode Gambar: Overlay lebih tebal agar teks putih terbaca
+                if (overlay) overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80 z-0 transition-all';
+            
+            } else if (tipeBg === 'gradasi' && pengaturan.bg_siswa_gradient) {
+                // Mode Gradasi Preset Tailwind
+                const gradientClasses = ['bg-gradient-to-br', ...pengaturan.bg_siswa_gradient.split(' ')];
+                headerHero.classList.add(...gradientClasses);
+                // Overlay tipis natural
+                if (overlay) overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30 z-0 transition-all';
+            
+            } else {
+                // Mode Default (Biru - Ungu Bawaan Sistem)
+                headerHero.classList.add('bg-gradient-to-br', 'from-blue-600', 'via-indigo-600', 'to-violet-700');
+                if (overlay) overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-0 transition-all';
+            }
         }
 
-        // 2. Ambil Quotes Acak Harian dari tabel_quotes
+        // --- (Kode untuk Tarik Data Quotes Acak biarkan sama seperti sebelumnya) ---
         const quoteEl = document.getElementById('siswa-quote-harian');
         if (quoteEl) {
             const { data: quotesData, error } = await db.from('tabel_quotes').select('kutipan');
-            
             if (!error && quotesData && quotesData.length > 0) {
-                // Trik pintar: Gunakan rumus hari dalam setahun agar quote berganti 1x sehari, 
-                // tapi tidak berubah-ubah jika siswa me-refresh aplikasi di hari yang sama.
                 const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
                 const index = dayOfYear % quotesData.length;
                 quoteEl.innerText = quotesData[index].kutipan;
