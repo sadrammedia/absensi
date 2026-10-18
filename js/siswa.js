@@ -110,8 +110,19 @@ async function terapkanPengaturanDashboardSiswa() {
             // 2. Eksekusi sesuai tipe pilihan Admin
             if (tipeBg === 'gambar' && pengaturan.bg_siswa_url) {
                 headerHero.style.backgroundImage = `url('${pengaturan.bg_siswa_url}')`;
-                // Mode Gambar: Overlay lebih tebal agar teks putih terbaca
-                if (overlay) overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80 z-0 transition-all';
+                
+                // --- LOGIKA BARU: CEK STATUS SAKELAR OVERLAY ---
+                const pakaiOverlay = pengaturan.bg_siswa_overlay !== false; 
+                
+                if (overlay) {
+                    if (pakaiOverlay) {
+                        // Jika ON: Pasang kaca film gelap (Mode Aman)
+                        overlay.className = 'absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80 z-0 transition-all';
+                    } else {
+                        // Jika OFF: Hapus kaca film sepenuhnya (Gambar Murni 100%)
+                        overlay.className = 'hidden'; 
+                    }
+                }
             
             } else if (tipeBg === 'gradasi' && pengaturan.bg_siswa_gradient) {
                 // Mode Gradasi Preset Tailwind
