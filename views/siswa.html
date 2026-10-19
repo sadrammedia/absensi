@@ -183,7 +183,7 @@
             <div class="flex-1 min-w-0 relative z-10">
                 <h3 class="font-extrabold text-xs text-white leading-tight" id="banner-prestasi-gelar">Siswa Aktif</h3>
                 <p class="text-[9px] text-slate-300 leading-tight mt-0.5 line-clamp-2" id="banner-prestasi-motivasi">Tingkatkan terus kehadiranmu untuk meraih gelar Teladan.</p>
-                <button onclick="showToast('Rincian Poin akan segera hadir!')" class="mt-1.5 bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 px-3 py-1 rounded-full text-[9px] font-extrabold shadow-sm hover:scale-105 active:scale-95 transition-all border border-yellow-300">
+                <button onclick="bukaSheetPoin()" class="mt-1.5 bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 px-3 py-1 rounded-full text-[9px] font-extrabold shadow-sm hover:scale-105 active:scale-95 transition-all border border-yellow-300">
                     Lihat Poin
                 </button>
             </div>
@@ -742,6 +742,48 @@
         <!-- Tombol Keluar / Logout Ramping -->
         <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 rounded-xl py-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-sm transition-colors mt-2.5 border border-red-100">
             <i class="fas fa-sign-out-alt"></i> Keluar Sistem
+        </button>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL LACI BAWAH: RINCIAN POIN SISWA -->
+<!-- ========================================== -->
+<div id="sheet-rincian-poin" class="fixed inset-0 z-[60] flex flex-col justify-end hidden">
+    <!-- Overlay Gelap (Tutup panel jika diklik) -->
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="sheet-poin-overlay" onclick="tutupSheetPoin()"></div>
+    
+    <!-- Konten Laci -->
+    <div class="bg-slate-900 w-full rounded-t-[2.5rem] p-5 pb-8 relative z-10 transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-slate-700/50" id="sheet-poin-content">
+        <!-- Handle Tarikan (Visual) -->
+        <div class="w-12 h-1.5 bg-slate-600 rounded-full mx-auto mb-5"></div>
+        
+        <!-- Header Laci -->
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                    <i class="fas fa-coins text-yellow-400 text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-white text-lg leading-tight">Rincian Poin</h3>
+                    <p class="text-[10px] text-slate-400 font-medium">Bulan Ini</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="block font-mono font-extrabold text-2xl text-yellow-400 leading-none" id="sheet-total-poin">0</span>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Poin</span>
+            </div>
+        </div>
+
+        <!-- Wadah List Poin -->
+        <div class="space-y-3 mb-6 max-h-[40vh] overflow-y-auto custom-scroll pr-1" id="list-rincian-poin">
+            <!-- (Isi akan digenerate oleh JS) -->
+            <p class="text-center text-xs text-slate-500 py-4">Memuat rincian poin...</p>
+        </div>
+
+        <!-- Tombol Teaser Arcade -->
+        <button onclick="showToast('Mini Games sedang dibangun. Kumpulkan terus poinmu!')" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 font-extrabold py-3.5 rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
+            <i class="fas fa-gamepad text-lg"></i> <span>Tukar Poin di Arcade <span class="text-[9px] bg-slate-900 text-yellow-400 px-1.5 py-0.5 rounded-md ml-1 opacity-80">(Segera)</span></span>
         </button>
     </div>
 </div>
