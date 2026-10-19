@@ -1698,3 +1698,164 @@ function renderDaftarPoinBulanIni() {
     }
     listContainer.innerHTML = html;
 }
+
+// --- LOGIKA TAB LACI (RIWAYAT VS KLASEMEN) ---
+function switchTabPoin(target) {
+    const slider = document.getElementById('slider-bg-tab');
+    const btnRiwayat = document.getElementById('btn-tab-riwayat');
+    const btnKlasemen = document.getElementById('btn-tab-klasemen');
+    const kontenRiwayat = document.getElementById('konten-tab-riwayat');
+    const kontenKlasemen = document.getElementById('konten-tab-klasemen');
+
+    if (target === 'riwayat') {
+        slider.style.left = '0%';
+        btnRiwayat.classList.replace('text-slate-400', 'text-white');
+        btnKlasemen.classList.replace('text-white', 'text-slate-400');
+        
+        kontenRiwayat.classList.remove('hidden');
+        setTimeout(() => kontenRiwayat.classList.remove('opacity-0'), 10);
+        kontenKlasemen.classList.add('opacity-0');
+        setTimeout(() => kontenKlasemen.classList.add('hidden'), 300);
+        
+    } else if (target === 'klasemen') {
+        slider.style.left = '50%';
+        btnKlasemen.classList.replace('text-slate-400', 'text-white');
+        btnRiwayat.classList.replace('text-white', 'text-slate-400');
+        
+        kontenKlasemen.classList.remove('hidden');
+        setTimeout(() => kontenKlasemen.classList.remove('opacity-0'), 10);
+        kontenRiwayat.classList.add('opacity-0');
+        setTimeout(() => kontenRiwayat.classList.add('hidden'), 300);
+        
+        // Picu perhitungan klasemen kelas jika belum ditarik
+        loadKlasemenKelasBulanIni();
+    }
+}
+
+// --- MESIN PERHITUNGAN KLASEMEN KELAS ---
+let cacheKlasemenBulanIni = null;
+
+async function loadKlasemenKelasBulanIni() {
+    if (!currentUser || currentUser.role !== 'siswa') return;
+    const kelasSiswa = currentUser.kelas;
+    document.getElementById('label-klasemen-kelas').innerText = `Kelas ${kelasSiswa || 'Kosong'}`;
+    const listContainer = document.getElementById('list-klasemen-poin');
+    const infoPesaing = document.getElementById('info-pesaing');
+
+    if (cacheKlasemenBulanIni) {
+        renderUIKlasemen(cacheKlasemenBulanIni);
+        return;
+    }
+
+    try {
+        const dateObj = new Date();
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const prefixBulan = `${yyyy}-${mm}`;
+
+        // 1. Tarik Semua Siswa di Kelas Tersebut
+        const { data: temanSatuKelas, error: errSiswa } = await db.from('tabel_siswa').select('nis, nama, foto_profil').eq('kelas', kelasSiswa);
+        if (errSiswa || !temanSatuKelas) throw new Error("Gagal menarik teman sekelas");
+        
+        const jumlahSiswa = temanSatuKelas.length;
+        infoPesaing.innerText = `${jumlahSiswa} Siswa`;
+
+        // 2. Tarik Semua Presensi Kelas Bulan Ini
+        // Catatan: Anda harus memastikan tabel_presensi bisa diakses RLS-nya untuk semua siswa satu kelas.
+        const { data: presensiKelas, error: errPresensi } = await db.from('tabel_presensi')
+            .select('nis')
+            .eq('kelas', kelasSiswa)
+            .like('tanggal', `${prefixBulan}%`);
+            
+        // 3. Tarik Semua Izin Bulan Ini
+        // Karena tabel_izin mungkin tidak punya kolom kelas, kita tarik izin teman yang nis-nya ada
+        const daftarNis = temanSatuKelas.map(s => s.nis);
+        const { data: izinKelas } = await db.from('tabel_izin')
+            .select('nis')
+            .eq('status', 'Disetujui')
+            .in('nis', daftarNis)
+            .like('tanggal', `${prefixBulan}%`);
+
+        // 4. Proses Kalkulasi (On-the-Fly)
+        let papanSkor = temanSatuKelas.map(siswa => {
+            // Hitung absensi
+            const jmlHadir = presensiKelas ? presensiKelas.filter(p => p.nis === siswa.nis).length : 0;
+            const jmlIzin = izinKelas ? izinKelas.filter(i => i.nis === siswa.nis).length : 0;
+            const totalPoin = (jmlHadir * 10) + (jmlIzin * 2);
+            
+            return {
+                nis: siswa.nis,
+                nama: siswa.nama.split(' ').slice(0, 2).join(' '), // Ambil 2 kata depan saja
+                foto: siswa.foto_profil,
+                poin: totalPoin
+            };
+        });
+
+        // 5. Urutkan dari Poin Tertinggi ke Terendah (Sort Descending)
+        papanSkor.sort((a, b) => b.poin - a.poin);
+        
+        // Simpan di cache agar tidak memberatkan database jika laci dibuka tutup
+        cacheKlasemenBulanIni = papanSkor;
+        
+        // 6. Tampilkan ke Layar
+        renderUIKlasemen(papanSkor);
+
+    } catch (e) {
+        console.error("Gagal menghitung klasemen:", e);
+        listContainer.innerHTML = `<p class="text-center text-xs text-red-400 py-4">Gagal memuat klasemen. ${e.message}</p>`;
+        infoPesaing.innerText = "Error";
+    }
+}
+
+function renderUIKlasemen(dataKlasemen) {
+    const listContainer = document.getElementById('list-klasemen-poin');
+    
+    if (!dataKlasemen || dataKlasemen.length === 0) {
+        listContainer.innerHTML = '<p class="text-center text-xs text-slate-500 py-4">Belum ada data poin.</p>';
+        return;
+    }
+
+    let html = '';
+    
+    dataKlasemen.forEach((siswa, index) => {
+        const rank = index + 1;
+        const isSaya = siswa.nis === currentUser.nis;
+        
+        // Penyesuaian Visual Berdasarkan Peringkat
+        let bgStyle = isSaya ? 'bg-slate-700/80 border-slate-500' : 'bg-slate-800/40 border-slate-700/50';
+        let rankVisual = `<span class="text-slate-500 font-extrabold text-sm w-5 text-center">${rank}</span>`;
+        let highlightSaya = isSaya ? '<span class="text-[8px] bg-blue-500 text-white px-1.5 py-0.5 rounded ml-1 font-bold">SAYA</span>' : '';
+        
+        // Perlakuan Khusus Top 3
+        if (rank === 1) {
+            bgStyle = isSaya ? 'bg-yellow-500/20 border-yellow-500/50' : 'bg-gradient-to-r from-yellow-500/10 to-slate-800/40 border-yellow-500/30';
+            rankVisual = `<i class="fas fa-medal text-yellow-400 text-xl w-5 text-center drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]"></i>`;
+        } else if (rank === 2) {
+            bgStyle = isSaya ? 'bg-slate-300/20 border-slate-300/50' : 'bg-gradient-to-r from-slate-300/10 to-slate-800/40 border-slate-300/30';
+            rankVisual = `<i class="fas fa-medal text-slate-300 text-lg w-5 text-center drop-shadow-[0_0_5px_rgba(203,213,225,0.5)]"></i>`;
+        } else if (rank === 3) {
+            bgStyle = isSaya ? 'bg-amber-700/30 border-amber-600/50' : 'bg-gradient-to-r from-amber-700/20 to-slate-800/40 border-amber-700/30';
+            rankVisual = `<i class="fas fa-medal text-amber-600 text-lg w-5 text-center"></i>`;
+        }
+
+        const avatar = siswa.foto 
+            ? `<img src="${siswa.foto}" class="w-8 h-8 rounded-full object-cover border border-slate-600">`
+            : `<div class="w-8 h-8 rounded-full bg-slate-700 text-slate-400 flex items-center justify-center text-xs"><i class="fas fa-user"></i></div>`;
+
+        html += `
+        <div class="flex items-center justify-between p-2.5 rounded-xl border ${bgStyle} transition-colors">
+            <div class="flex items-center gap-3">
+                ${rankVisual}
+                ${avatar}
+                <div class="min-w-0">
+                    <h4 class="font-bold text-[11px] ${isSaya ? 'text-white' : 'text-slate-300'} truncate flex items-center">${siswa.nama} ${highlightSaya}</h4>
+                </div>
+            </div>
+            <div class="font-mono font-extrabold text-[13px] ${rank <= 3 ? 'text-yellow-400' : 'text-slate-400'}">
+                ${siswa.poin} <span class="text-[8px] text-slate-500 ml-0.5">pts</span>
+            </div>
+        </div>`;
+    });
+
+    listContainer.innerHTML = html;
+}
