@@ -1589,3 +1589,112 @@ async function loadStatistikKehadiranBulanIni() {
         console.error("Gagal load statistik kehadiran bulanan:", e);
     }
 }
+
+// ==========================================
+// LACI RINCIAN POIN (BOTTOM SHEET)
+// ==========================================
+function bukaSheetPoin() {
+    const sheet = document.getElementById('sheet-rincian-poin');
+    const overlay = document.getElementById('sheet-poin-overlay');
+    const content = document.getElementById('sheet-poin-content');
+    
+    if (sheet && overlay && content) {
+        // Tampilkan container utamanya
+        sheet.classList.remove('hidden');
+        
+        // Sedikit jeda agar browser memproses penghapusan 'hidden' sebelum animasi jalan
+        setTimeout(() => {
+            overlay.classList.remove('opacity-0');
+            overlay.classList.add('opacity-100');
+            content.classList.remove('translate-y-full');
+            content.classList.add('translate-y-0');
+        }, 10);
+
+        // Render isi daftar poin
+        renderDaftarPoinBulanIni();
+    }
+}
+
+function tutupSheetPoin() {
+    const sheet = document.getElementById('sheet-rincian-poin');
+    const overlay = document.getElementById('sheet-poin-overlay');
+    const content = document.getElementById('sheet-poin-content');
+    
+    if (sheet && overlay && content) {
+        // Jalankan animasi mundur
+        overlay.classList.remove('opacity-100');
+        overlay.classList.add('opacity-0');
+        content.classList.remove('translate-y-0');
+        content.classList.add('translate-y-full');
+        
+        // Sembunyikan container setelah animasi selesai (300ms)
+        setTimeout(() => {
+            sheet.classList.add('hidden');
+        }, 300);
+    }
+}
+
+function renderDaftarPoinBulanIni() {
+    const listContainer = document.getElementById('list-rincian-poin');
+    const totalHadirText = document.getElementById('kpi-hadir')?.innerText || "0";
+    const totalIzinText = document.getElementById('kpi-izin')?.innerText || "0";
+    
+    const hadir = parseInt(totalHadirText);
+    const izin = parseInt(totalIzinText);
+    
+    // Perhitungan sama persis dengan yang ada di loadStatistikKehadiranBulanIni()
+    const poinHadir = hadir * 10;
+    const poinIzin = izin * 2;
+    const total = poinHadir + poinIzin;
+    
+    // Sinkronkan angka besar di header laci
+    const elTotalPoin = document.getElementById('sheet-total-poin');
+    if (elTotalPoin) elTotalPoin.innerText = total;
+
+    if (total === 0) {
+        listContainer.innerHTML = `
+            <div class="text-center py-6">
+                <i class="fas fa-ghost text-slate-600 text-3xl mb-2 opacity-50"></i>
+                <p class="text-xs text-slate-500 font-medium">Belum ada poin terkumpul bulan ini.<br>Ayo tingkatkan kehadiranmu!</p>
+            </div>`;
+        return;
+    }
+
+    let html = '';    
+    if (hadir > 0) {
+        html += `
+        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-800/50 border border-slate-700">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm border border-emerald-500/20 shrink-0">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs text-slate-200">Presensi Kehadiran</h4>
+                    <p class="text-[9px] text-slate-400 mt-0.5">${hadir} Hari x 10 Poin</p>
+                </div>
+            </div>
+            <div class="font-mono font-extrabold text-sm text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
+                +${poinHadir}
+            </div>
+        </div>`;
+    }
+
+    if (izin > 0) {
+        html += `
+        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-800/50 border border-slate-700">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm border border-amber-500/20 shrink-0">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs text-slate-200">Izin Terkonfirmasi</h4>
+                    <p class="text-[9px] text-slate-400 mt-0.5">${izin} Hari x 2 Poin</p>
+                </div>
+            </div>
+            <div class="font-mono font-extrabold text-sm text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/20">
+                +${poinIzin}
+            </div>
+        </div>`;
+    }
+    listContainer.innerHTML = html;
+}
