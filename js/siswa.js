@@ -1142,12 +1142,11 @@ function getNamaHariIndo(dateObj) {
     return listHari[dateObj.getDay()];
 }
 
-// Inisialisasi Pill Hari dengan Tanggal Riil Minggu Ini
+// Inisialisasi Pill Hari dengan Format Rapi & Ungu Pastel Gradasi
 function initJadwalSiswa() {
     const containerPill = document.getElementById('container-pill-hari');
     if (!containerPill) return;
 
-    // Hitung tanggal untuk hari Senin sampai Jumat minggu ini
     const curr = new Date();
     const first = curr.getDate() - curr.getDay() + 1; // Hari Senin
     
@@ -1169,17 +1168,20 @@ function initJadwalSiswa() {
     let html = '';
     daftarHari.forEach(item => {
         const d = new Date(curr.setDate(first + item.offset));
-        const tglStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }); // Contoh: 28 Jul
+        const tglAngka = d.getDate(); // Contoh: 20
+        const tglBulan = d.toLocaleDateString('id-ID', { month: 'short' }); // Contoh: Okt
         const isSelected = selectedHariJadwal === item.nama;
-        // Menggunakan ukuran py-2.5 dan teks yang proporsional untuk 5 kolom berjejer
+
+        // Tombol aktif: Ungu Pastel Gradasi Solid
         const btnClass = isSelected 
-            ? 'py-2 rounded-2xl text-[11px] font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/30 flex flex-col items-center justify-center'
-            : 'py-2 rounded-2xl text-[11px] font-bold transition-all bg-transparent text-slate-500 hover:bg-slate-50 flex flex-col items-center justify-center';
+            ? 'py-2.5 px-1 rounded-2xl text-xs font-bold transition-all bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-purple-500/30 flex flex-col items-center justify-center scale-105'
+            : 'py-2.5 px-1 rounded-2xl text-xs font-bold transition-all bg-white text-slate-600 hover:bg-slate-50 border border-slate-100 flex flex-col items-center justify-center';
 
         html += `
             <button onclick="pilihHariJadwal('${item.nama}')" id="pill-hari-${item.nama}" class="pill-jadwal ${btnClass}">
-                <span class="leading-tight">${item.nama.substring(0, 3)}</span>
-                <span class="text-[9px] ${isSelected ? 'text-blue-100 font-medium' : 'text-slate-400 font-normal'} mt-0.5 leading-tight">${tglStr}</span>
+                <span class="text-[11px] font-extrabold leading-tight">${item.nama.substring(0, 3)}</span>
+                <span class="text-[10px] font-mono font-bold mt-1 ${isSelected ? 'text-white' : 'text-slate-700'} leading-none">${tglAngka}</span>
+                <span class="text-[8px] font-medium mt-0.5 ${isSelected ? 'text-purple-200' : 'text-slate-400'} uppercase tracking-wider leading-none">${tglBulan}</span>
             </button>
         `;
     });
@@ -1191,7 +1193,6 @@ function initJadwalSiswa() {
 function pilihHariJadwal(hari) {
     selectedHariJadwal = hari;
 
-    // Perbarui gaya aktif pada tombol pill hari
     const curr = new Date();
     const first = curr.getDate() - curr.getDay() + 1;
     const daftarHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
@@ -1200,15 +1201,20 @@ function pilihHariJadwal(hari) {
         const btn = document.getElementById(`pill-hari-${h}`);
         if (!btn) return;
         const d = new Date(curr.setDate(first + index));
-        const tglStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const tglAngka = d.getDate();
+        const tglBulan = d.toLocaleDateString('id-ID', { month: 'short' });
         
-        if (h === hari) {
-            btn.className = "pill-jadwal px-4 py-2 rounded-2xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20 shrink-0 flex flex-col items-center";
-            btn.innerHTML = `<span>${h}</span><span class="text-[9px] text-blue-100 font-medium mt-0.5">${tglStr}</span>`;
-        } else {
-            btn.className = "pill-jadwal px-4 py-2 rounded-2xl text-xs font-bold transition-all bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shrink-0 flex flex-col items-center";
-            btn.innerHTML = `<span>${h}</span><span class="text-[9px] text-slate-400 font-normal mt-0.5">${tglStr}</span>`;
-        }
+        const isSelected = (h === hari);
+        const btnClass = isSelected 
+            ? 'py-2.5 px-1 rounded-2xl text-xs font-bold transition-all bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-purple-500/30 flex flex-col items-center justify-center scale-105'
+            : 'py-2.5 px-1 rounded-2xl text-xs font-bold transition-all bg-white text-slate-600 hover:bg-slate-50 border border-slate-100 flex flex-col items-center justify-center';
+
+        btn.className = `pill-jadwal ${btnClass}`;
+        btn.innerHTML = `
+            <span class="text-[11px] font-extrabold leading-tight">${h.substring(0, 3)}</span>
+            <span class="text-[10px] font-mono font-bold mt-1 ${isSelected ? 'text-white' : 'text-slate-700'} leading-none">${tglAngka}</span>
+            <span class="text-[8px] font-medium mt-0.5 ${isSelected ? 'text-purple-200' : 'text-slate-400'} uppercase tracking-wider leading-none">${tglBulan}</span>
+        `;
     });
 
     loadJadwalSiswa(hari);
@@ -1222,7 +1228,7 @@ async function loadJadwalSiswa(hari) {
     if (labelKelas) labelKelas.innerText = `Kelas ${currentUser.kelas || '-'}`;
 
     if (!container) return;
-    container.innerHTML = `<p class="text-center text-xs text-blue-600 py-10 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> Memuat jadwal hari ${hari}...</p>`;
+    container.innerHTML = `<p class="text-center text-xs text-purple-600 py-10 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> Memuat jadwal hari ${hari}...</p>`;
 
     try {
         const { data, error } = await db.from('tabel_jadwal')
@@ -1236,7 +1242,7 @@ async function loadJadwalSiswa(hari) {
         if (!data || data.length === 0) {
             container.innerHTML = `
                 <div class="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm mt-4">
-                    <div class="w-16 h-16 rounded-full bg-slate-50 text-slate-400 mx-auto flex items-center justify-center text-2xl mb-3">
+                    <div class="w-16 h-16 rounded-full bg-purple-50 text-purple-400 mx-auto flex items-center justify-center text-2xl mb-3">
                         <i class="far fa-calendar-times"></i>
                     </div>
                     <h3 class="font-bold text-sm text-slate-700">Tidak Ada Jadwal</h3>
@@ -1246,25 +1252,127 @@ async function loadJadwalSiswa(hari) {
             return;
         }
 
-        // Variasi warna kotak nomor JP ala referensi gambar
-        const warnaNomor = [
-            'bg-blue-500 text-white shadow-blue-500/30',
-            'bg-emerald-500 text-white shadow-emerald-500/30',
-            'bg-amber-500 text-white shadow-amber-500/30',
-            'bg-purple-500 text-white shadow-purple-500/30',
-            'bg-indigo-500 text-white shadow-indigo-500/30',
-            'bg-fuchsia-500 text-white shadow-fuchsia-500/30'
+        // Variasi Gradasi Pastel Cantik untuk Nomor JP Bulat Sempurna
+        const warnaLingkaran = [
+            'bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-blue-500/30',
+            'bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-emerald-500/30',
+            'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-amber-500/30',
+            'bg-gradient-to-br from-violet-400 to-purple-500 text-white shadow-purple-500/30',
+            'bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-pink-500/30',
+            'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-cyan-500/30'
         ];
 
         container.innerHTML = '';
         data.forEach((item, index) => {
-            const warnaKotak = warnaNomor[index % warnaNomor.length];
+            const styleBulat = warnaLingkaran[index % warnaLingkaran.length];
             const nomorJP = index + 1;
 
             const card = document.createElement('div');
-            card.className = "bg-white rounded-2xl p-3.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center gap-3.5 hover:border-blue-200 transition-all";
+            card.className = "bg-white rounded-2xl p-3.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center gap-3.5 hover:border-purple-200 transition-all";
             card.innerHTML = `
-                <div class="w-11 h-11 rounded-xl ${warnaKotak} font-mono font-extrabold text-base flex items-center justify-center shrink-0 shadow-md">
+                <div class="w-11 h-11 rounded-full ${styleBulat} font-mono font-extrabold text-sm flex items-center justify-center shrink-0 shadow-md">
+                    ${nomorJP}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-center mb-0.5">
+                        <span class="text-[11px] font-mono font-semibold text-slate-400">${item.jam_mulai} - ${item.jam_selesai}</span>
+                    </div>
+                    <h4 class="font-extrabold text-slate-800 text-xs leading-snug truncate" title="${item.mapel}">${item.mapel}</h4>
+                    <p class="text-[10px] text-slate-500 font-medium truncate mt-0.5">
+                        Ruang ${item.ruang || 'Kelas'} • <span class="text-slate-600">${item.guru || 'Guru Pengampu'}</span>
+                    </p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error("Gagal memuat jadwal:", err);
+        container.innerHTML = '<p class="text-center text-xs text-rose-500 py-6 font-semibold">Gagal memuat jadwal dari server.</p>';
+    }
+}
+
+function pilihHariJadwal(hari) {
+    selectedHariJadwal = hari;
+
+    const curr = new Date();
+    const first = curr.getDate() - curr.getDay() + 1;
+    const daftarHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+
+    daftarHari.forEach((h, index) => {
+        const btn = document.getElementById(`pill-hari-${h}`);
+        if (!btn) return;
+        const d = new Date(curr.setDate(first + index));
+        const tglAngka = d.getDate();
+        const tglBulan = d.toLocaleDateString('id-ID', { month: 'short' });
+        
+        const isSelected = (h === hari);
+        const btnClass = isSelected 
+            ? 'py-2.5 px-1 rounded-2xl text-xs font-bold transition-all bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-purple-500/30 flex flex-col items-center justify-center scale-105'
+            : 'py-2.5 px-1 rounded-2xl text-xs font-bold transition-all bg-white text-slate-600 hover:bg-slate-50 border border-slate-100 flex flex-col items-center justify-center';
+
+        btn.className = `pill-jadwal ${btnClass}`;
+        btn.innerHTML = `
+            <span class="text-[11px] font-extrabold leading-tight">${h.substring(0, 3)}</span>
+            <span class="text-[10px] font-mono font-bold mt-1 ${isSelected ? 'text-white' : 'text-slate-700'} leading-none">${tglAngka}</span>
+            <span class="text-[8px] font-medium mt-0.5 ${isSelected ? 'text-purple-200' : 'text-slate-400'} uppercase tracking-wider leading-none">${tglBulan}</span>
+        `;
+    });
+
+    loadJadwalSiswa(hari);
+}
+
+async function loadJadwalSiswa(hari) {
+    if (!currentUser || currentUser.role !== 'siswa') return;
+
+    const container = document.getElementById('jadwal-list-container');
+    const labelKelas = document.getElementById('jadwal-sub-kelas');
+    if (labelKelas) labelKelas.innerText = `Kelas ${currentUser.kelas || '-'}`;
+
+    if (!container) return;
+    container.innerHTML = `<p class="text-center text-xs text-purple-600 py-10 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> Memuat jadwal hari ${hari}...</p>`;
+
+    try {
+        const { data, error } = await db.from('tabel_jadwal')
+            .select('*')
+            .eq('kelas', currentUser.kelas)
+            .eq('hari', hari)
+            .order('jam_mulai', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm mt-4">
+                    <div class="w-16 h-16 rounded-full bg-purple-50 text-purple-400 mx-auto flex items-center justify-center text-2xl mb-3">
+                        <i class="far fa-calendar-times"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-slate-700">Tidak Ada Jadwal</h3>
+                    <p class="text-xs text-slate-400 mt-1">Tidak ada pelajaran yang terdaftar di hari ${hari}.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Variasi Gradasi Pastel Cantik untuk Nomor JP Bulat Sempurna
+        const warnaLingkaran = [
+            'bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-blue-500/30',
+            'bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-emerald-500/30',
+            'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-amber-500/30',
+            'bg-gradient-to-br from-violet-400 to-purple-500 text-white shadow-purple-500/30',
+            'bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-pink-500/30',
+            'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-cyan-500/30'
+        ];
+
+        container.innerHTML = '';
+        data.forEach((item, index) => {
+            const styleBulat = warnaLingkaran[index % warnaLingkaran.length];
+            const nomorJP = index + 1;
+
+            const card = document.createElement('div');
+            card.className = "bg-white rounded-2xl p-3.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center gap-3.5 hover:border-purple-200 transition-all";
+            card.innerHTML = `
+                <div class="w-11 h-11 rounded-full ${styleBulat} font-mono font-extrabold text-sm flex items-center justify-center shrink-0 shadow-md">
                     ${nomorJP}
                 </div>
                 <div class="flex-1 min-w-0">
