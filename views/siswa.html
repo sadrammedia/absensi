@@ -333,16 +333,17 @@
     </div>
 </div>
 
-<!-- Tab: Jadwal Pelajaran Siswa (Stylish Timeline) -->
+<!-- Tab: Jadwal Pelajaran Siswa (Stylish Timeline & Kapsul Modern) -->
 <div id="tab-jadwal" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-[#f8fafc]">
-    <div class="bg-white/90 backdrop-blur-md pt-5 pb-3 px-4 sticky top-0 z-20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-gray-100 flex justify-between items-center">
+    <!-- Header Elegan -->
+    <div class="bg-white/90 backdrop-blur-md pt-5 pb-3 px-4 sticky top-0 z-20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-slate-100 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <button onclick="switchTabMobile('dashboard')" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors">
+            <button onclick="switchTabMobile('dashboard')" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-200 transition-colors">
                 <i class="fas fa-arrow-left text-sm"></i>
             </button>
             <div>
                 <h2 class="font-extrabold text-lg text-slate-800 tracking-tight leading-tight">Jadwal Pelajaran</h2>
-                <p class="text-[10px] text-purple-600 font-bold uppercase tracking-wider" id="jadwal-sub-kelas">Kelas Saya</p>
+                <p class="text-[10px] text-purple-600 font-bold uppercase tracking-wider" id="jadwal-sub-kelas">Studio & Teori</p>
             </div>
         </div>
         <button onclick="loadJadwalSiswa(selectedHariJadwal)" class="w-9 h-9 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center hover:bg-purple-100 transition-colors shadow-sm">
@@ -350,14 +351,14 @@
         </button>
     </div>
     
-    <!-- Selector Hari (Pill Tab) -->
-    <div class="px-4 pt-3 pb-1">
+    <!-- Selector Hari (Pill Tab Kapsul Mewah) -->
+    <div class="px-4 pt-4 pb-2">
         <div class="flex gap-2 overflow-x-auto custom-scroll pb-1">
-            <button onclick="pilihHariJadwal('Senin')" id="pill-hari-Senin" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-purple-600 text-white shadow-sm shrink-0">Senin</button>
-            <button onclick="pilihHariJadwal('Selasa')" id="pill-hari-Selasa" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0">Selasa</button>
-            <button onclick="pilihHariJadwal('Rabu')" id="pill-hari-Rabu" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0">Rabu</button>
-            <button onclick="pilihHariJadwal('Kamis')" id="pill-hari-Kamis" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0">Kamis</button>
-            <button onclick="pilihHariJadwal('Jumat')" id="pill-hari-Jumat" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0">Jumat</button>
+            <button onclick="pilihHariJadwal('Senin')" id="pill-hari-Senin" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-purple-600 text-white shadow-md shadow-purple-500/20 shrink-0">Senin</button>
+            <button onclick="pilihHariJadwal('Selasa')" id="pill-hari-Selasa" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shrink-0">Selasa</button>
+            <button onclick="pilihHariJadwal('Rabu')" id="pill-hari-Rabu" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shrink-0">Rabu</button>
+            <button onclick="pilihHariJadwal('Kamis')" id="pill-hari-Kamis" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shrink-0">Kamis</button>
+            <button onclick="pilihHariJadwal('Jumat')" id="pill-hari-Jumat" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shrink-0">Jumat</button>
         </div>
     </div>
 
