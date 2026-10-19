@@ -745,3 +745,41 @@
         </button>
     </div>
 </div>
+
+<!-- Bottom Navigation (Siswa) -->
+<div class="absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-50 rounded-t-3xl">            
+    <button onclick="switchTabMobile('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center relative w-14 active-nav group">
+        <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
+            <i class="fas fa-home text-[20px] drop-shadow-sm"></i>
+        </div>
+        <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Beranda</span>
+    </button>
+
+    <button onclick="switchTabMobile('histori')" id="nav-histori" class="nav-item flex flex-col items-center relative w-14 group">
+        <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
+            <i class="fas fa-history text-[20px] drop-shadow-sm"></i>
+        </div>
+        <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Riwayat</span>
+    </button>
+
+    <div class="nav-fab-container">
+        <button onclick="triggerAbsenFAB()" class="nav-fab-btn bg-gradient-to-tr from-teal-500 to-emerald-400 shadow-[0_10px_20px_rgba(16,185,129,0.4)] hover:-translate-y-1">
+            <i class="fas fa-fingerprint text-3xl drop-shadow-md"></i>
+        </button>
+        <span class="text-[10px] font-bold text-emerald-600 mt-9 mb-1">Absen</span>
+    </div>
+
+    <button onclick="switchTabMobile('izin')" id="nav-izin" class="nav-item flex flex-col items-center relative w-14 group">
+        <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
+            <i class="fas fa-envelope-open-text text-[20px] drop-shadow-sm"></i>
+        </div>
+        <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Izin</span>
+    </button>
+
+    <button onclick="switchTabMobile('menu')" id="nav-menu" class="nav-item flex flex-col items-center relative w-14 group">
+        <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
+            <i class="fas fa-th-large text-[20px] drop-shadow-sm"></i>
+        </div>
+        <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Menu</span>
+    </button>
+</div>
