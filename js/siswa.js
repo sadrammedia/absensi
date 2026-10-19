@@ -1856,6 +1856,237 @@ function renderUIKlasemen(dataKlasemen) {
             </div>
         </div>`;
     });
-
     listContainer.innerHTML = html;
+}
+
+// ==========================================
+// MESIN ARCADE (MEMORY MATCH) & POIN DINAMIS
+// ==========================================
+let arcadeInterval = null;
+let arcadeTime = 0;
+let arcadeMoves = 0;
+let flippedCards = [];
+let matchedPairs = 0;
+const totalPairs = 8; // Grid 4x4 = 16 kartu = 8 Pasang
+let isGamePlaying = false;
+
+// Array Ikon untuk game (Tema Retro/Sci-fi)
+const iconList = [
+    'fa-ghost', 'fa-gem', 'fa-space-shuttle', 'fa-robot',
+    'fa-dragon', 'fa-meteor', 'fa-bolt', 'fa-fire'
+];
+
+async function bukaArcade() {
+    tutupSheetPoin(); // Tutup laci poin
+    const modal = document.getElementById('modal-arcade');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        await refreshPoinArcade(); // Kalkulasi ulang total poin
+    }
+}
+
+function tutupArcade() {
+    const modal = document.getElementById('modal-arcade');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        clearInterval(arcadeInterval);
+        isGamePlaying = false;
+    }
+}
+
+// Menghitung Saldo Total = (Absen + Izin) + Saldo Game
+async function refreshPoinArcade() {
+    try {
+        // Tarik data dompet game terbaru dari server
+        const { data, error } = await db.from('tabel_siswa').select('saldo_game').eq('nis', currentUser.nis).single();
+        if (data) currentUser.saldo_game = data.saldo_game || 0;
+        
+        // Hitung poin absen bulan ini
+        const dateObj = new Date();
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const prefixBulan = `${yyyy}-${mm}`;
+        
+        const { data: hadirData } = await db.from('tabel_presensi').select('id').eq('nis', currentUser.nis).like('tanggal', `${prefixBulan}%`);
+        const { data: izinData } = await db.from('tabel_izin').select('id').eq('nis', currentUser.nis).eq('status', 'Disetujui').like('tanggal', `${prefixBulan}%`);
+        
+        const poinHadir = (hadirData ? hadirData.length : 0) * 10;
+        const poinIzin = (izinData ? izinData.length : 0) * 2;
+        
+        // TOTAL POIN KESELURUHAN
+        const totalPoinSekarang = poinHadir + poinIzin + (currentUser.saldo_game || 0);
+        document.getElementById('arcade-poin-user').innerText = totalPoinSekarang;
+        
+        // Sinkronkan juga teks poin di laci dan banner depan
+        const elTotalLaci = document.getElementById('sheet-total-poin');
+        if (elTotalLaci) elTotalLaci.innerText = totalPoinSekarang;
+        const elBannerDepan = document.getElementById('banner-prestasi-poin');
+        if (elBannerDepan) elBannerDepan.innerText = totalPoinSekarang;
+        
+        return totalPoinSekarang;
+    } catch (e) {
+        console.error("Gagal refresh poin arcade:", e);
+        return 0;
+    }
+}
+
+async function mulaiGameMemory() {
+    const btnMulai = document.getElementById('btn-mulai-game');
+    const hargaMain = 20;
+    
+    // Cek apakah poin cukup
+    const totalPoin = await refreshPoinArcade();
+    if (totalPoin < hargaMain) {
+        return showToast(`Poin tidak cukup! Butuh ${hargaMain} Pts untuk bermain.`, true);
+    }
+    btnMulai.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    btnMulai.disabled = true;
+    try {
+        // Potong dompet game di Supabase
+        const saldoBaru = (currentUser.saldo_game || 0) - hargaMain;
+        const { error } = await db.from('tabel_siswa').update({ saldo_game: saldoBaru }).eq('nis', currentUser.nis);
+        if (error) throw error;
+        
+        currentUser.saldo_game = saldoBaru;
+        await refreshPoinArcade();
+        
+        // Eksekusi Papan Permainan
+        initPapanMemory();
+        btnMulai.innerHTML = '<i class="fas fa-play"></i> MAIN LAGI (20 Pts)';
+        btnMulai.disabled = false;
+        
+    } catch (e) {
+        showToast("Gagal memotong poin. Periksa jaringan.", true);
+        btnMulai.innerHTML = '<i class="fas fa-play"></i> MAIN (20 Pts)';
+        btnMulai.disabled = false;
+    }
+}
+
+function initPapanMemory() {
+    isGamePlaying = true;
+    arcadeTime = 0;
+    arcadeMoves = 0;
+    flippedCards = [];
+    matchedPairs = 0;
+    
+    document.getElementById('arcade-timer').innerText = "00:00";
+    document.getElementById('arcade-moves').innerText = "0";
+    
+    const grid = document.getElementById('arcade-grid');
+    grid.classList.remove('opacity-50', 'pointer-events-none');
+    grid.innerHTML = ''; 
+
+    // Duplikasi dan Acak Kartu
+    let cards = [...iconList, ...iconList];
+    cards.sort(() => Math.random() - 0.5);
+
+    cards.forEach((icon, index) => {
+        const card = document.createElement('div');
+        // Desain Kartu Glassmorphism Gelap
+        card.className = "aspect-square bg-slate-800 rounded-xl cursor-pointer shadow-[0_4px_15px_rgba(0,0,0,0.3)] transition-all duration-300 flex items-center justify-center text-3xl border border-slate-600 hover:scale-105 active:scale-95";
+        card.dataset.icon = icon;
+        card.innerHTML = `<i class="fas fa-question text-slate-500 opacity-30 card-front"></i><i class="fas ${icon} text-white hidden card-back"></i>`;
+        card.onclick = () => flipCard(card);
+        grid.appendChild(card);
+    });
+
+    // Jalankan Stopwatch
+    clearInterval(arcadeInterval);
+    arcadeInterval = setInterval(() => {
+        arcadeTime++;
+        const m = String(Math.floor(arcadeTime / 60)).padStart(2, '0');
+        const s = String(arcadeTime % 60).padStart(2, '0');
+        document.getElementById('arcade-timer').innerText = `${m}:${s}`;
+    }, 1000);
+}
+
+function flipCard(card) {
+    if (!isGamePlaying) return;
+    if (flippedCards.length >= 2) return;
+    if (card.classList.contains('flipped')) return;
+
+    // Putar Kartu (CSS Visual)
+    card.classList.add('flipped', 'bg-gradient-to-br', 'from-blue-500', 'to-indigo-600', 'border-blue-400');
+    card.classList.remove('bg-slate-800', 'border-slate-600');
+    card.querySelector('.card-front').classList.add('hidden');
+    card.querySelector('.card-back').classList.remove('hidden');
+    flippedCards.push(card);
+    if (flippedCards.length === 2) {
+        arcadeMoves++;
+        document.getElementById('arcade-moves').innerText = arcadeMoves;
+        cekKecocokan();
+    }
+}
+
+function cekKecocokan() {
+    const [card1, card2] = flippedCards;
+    const match = card1.dataset.icon === card2.dataset.icon;
+    if (match) {
+        matchedPairs++;
+        // Ubah warna jadi hijau jika cocok
+        card1.classList.replace('from-blue-500', 'from-emerald-400');
+        card1.classList.replace('to-indigo-600', 'to-emerald-600');
+        card1.classList.replace('border-blue-400', 'border-emerald-300');
+        
+        card2.classList.replace('from-blue-500', 'from-emerald-400');
+        card2.classList.replace('to-indigo-600', 'to-emerald-600');
+        card2.classList.replace('border-blue-400', 'border-emerald-300');        
+        card1.classList.add('animate-bounce');
+        card2.classList.add('animate-bounce');
+        
+        setTimeout(() => {
+            card1.classList.remove('animate-bounce');
+            card2.classList.remove('animate-bounce');
+        }, 1000);
+
+        flippedCards = [];
+        if (matchedPairs === totalPairs) {
+            gameSelesai();
+        }
+    } else {
+        // Tutup kembali jika salah
+        setTimeout(() => {
+            card1.classList.remove('flipped', 'bg-gradient-to-br', 'from-blue-500', 'to-indigo-600', 'border-blue-400');
+            card1.classList.add('bg-slate-800', 'border-slate-600');
+            card1.querySelector('.card-front').classList.remove('hidden');
+            card1.querySelector('.card-back').classList.add('hidden');
+
+            card2.classList.remove('flipped', 'bg-gradient-to-br', 'from-blue-500', 'to-indigo-600', 'border-blue-400');
+            card2.classList.add('bg-slate-800', 'border-slate-600');
+            card2.querySelector('.card-front').classList.remove('hidden');
+            card2.querySelector('.card-back').classList.add('hidden');
+            flippedCards = [];
+        }, 800);
+    }
+}
+
+async function gameSelesai() {
+    isGamePlaying = false;
+    clearInterval(arcadeInterval);
+    const hadiah = 50;    
+    try {
+        // Tambahkan hadiah ke dompet
+        const saldoBaru = (currentUser.saldo_game || 0) + hadiah;
+        await db.from('tabel_siswa').update({ saldo_game: saldoBaru }).eq('nis', currentUser.nis);
+        currentUser.saldo_game = saldoBaru;
+        await refreshPoinArcade();
+        
+        // Efek Papan Selesai
+        const grid = document.getElementById('arcade-grid');
+        grid.classList.add('opacity-50', 'pointer-events-none');
+        grid.innerHTML = `
+            <div class="col-span-4 text-center text-emerald-400 text-xs py-10 font-bold bg-emerald-900/30 rounded-2xl border border-emerald-500/30">
+                <i class="fas fa-trophy text-5xl mb-4 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]"></i><br>
+                <span class="text-white text-lg drop-shadow-md">KAMU MENANG!</span><br>
+                <span class="text-yellow-400 font-extrabold text-xl">+${hadiah} Poin</span><br>
+                <div class="mt-3 text-slate-300 font-medium">Waktu: ${arcadeTime}s | Langkah: ${arcadeMoves}</div>
+            </div>
+        `;
+        showToast(`Hebat! +${hadiah} Poin ditambahkan ke dompetmu!`);
+    } catch(e) {
+        console.error(e);
+        showToast("Gagal menyimpan hadiah poin.", true);
+    }
 }
