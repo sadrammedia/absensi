@@ -80,20 +80,29 @@ function togglePasswordVisibility() {
     }
 }
 
-async function handleLogout() {
+function handleLogout() {
+    // 1. Eksekusi Latar Belakang (Fire-and-Forget) tanpa 'await'
     if (currentUser && currentUser.role === 'siswa') {
-        try {
-            await db.from('tabel_siswa').update({ device_id: null }).eq('nis', currentUser.nis);
-        } catch (e) {
-            console.error("Gagal melepas ikatan perangkat:", e);
-        }
+        db.from('tabel_siswa')
+            .update({ device_id: null })
+            .eq('nis', currentUser.nis)
+            .then(({ error }) => {
+                if (error) console.error("Gagal melepas ikatan perangkat:", error);
+            })
+            .catch(e => console.error("Error jaringan saat logout:", e));
     }
 
+    // 2. Pembersihan Instan Memori Lokal
     currentUser = null;
     localStorage.removeItem('app_session');
 
-    document.getElementById('login-id').value = '';
-    document.getElementById('login-pass').value = '';
+    // 3. Reset UI & Tendang ke Halaman Login Detik Itu Juga
+    const loginId = document.getElementById('login-id');
+    const loginPass = document.getElementById('login-pass');
+    
+    if (loginId) loginId.value = '';
+    if (loginPass) loginPass.value = '';
+    
     showScreen('screen-login');
 }
 
