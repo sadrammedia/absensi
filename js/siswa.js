@@ -1560,11 +1560,20 @@ async function loadStatistikKehadiranBulanIni() {
         if (elIzin) elIzin.innerText = totalIzin;
         if (elPersen) elPersen.innerText = `${persentase}%`;
 
-        // --- LOGIKA POIN & PRESTASI (GAMIFICATION DASAR) ---
-        // Asumsi sementara: 1 Hadir = 10 Poin, 1 Izin = 2 Poin
-        const totalPoin = (totalHadir * 10) + (totalIzin * 2);         
+        // --- PERBAIKAN: LOGIKA POIN & PRESTASI (GAMIFICATION) ---
+        // 1. Tarik saldo game terbaru dari database saat dashboard dimuat
+        const { data: userDb } = await db.from('tabel_siswa').select('saldo_game').eq('nis', currentUser.nis).single();
+        if (userDb) currentUser.saldo_game = userDb.saldo_game || 0;
+
+        // 2. Jumlahkan semuanya: Hadir + Izin + Saldo Game
+        const poinHadir = (totalHadir * 10);
+        const poinIzin = (totalIzin * 2);
+        const poinGame = currentUser.saldo_game || 0;        
+        const totalPoin = poinHadir + poinIzin + poinGame; 
+        
         const elPoin = document.getElementById('banner-prestasi-poin');
         const elGelar = document.getElementById('banner-prestasi-gelar');
+        
         const elMotivasi = document.getElementById('banner-prestasi-motivasi');
         const elBintang = document.getElementById('banner-prestasi-bintang');
 
