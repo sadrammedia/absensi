@@ -1171,15 +1171,15 @@ function initJadwalSiswa() {
         const d = new Date(curr.setDate(first + item.offset));
         const tglStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }); // Contoh: 28 Jul
         const isSelected = selectedHariJadwal === item.nama;
-
+        // Menggunakan ukuran py-2.5 dan teks yang proporsional untuk 5 kolom berjejer
         const btnClass = isSelected 
-            ? 'px-4 py-2 rounded-2xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20 shrink-0 flex flex-col items-center'
-            : 'px-4 py-2 rounded-2xl text-xs font-bold transition-all bg-white text-slate-500 hover:bg-slate-50 border border-slate-200 shrink-0 flex flex-col items-center';
+            ? 'py-2 rounded-2xl text-[11px] font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/30 flex flex-col items-center justify-center'
+            : 'py-2 rounded-2xl text-[11px] font-bold transition-all bg-transparent text-slate-500 hover:bg-slate-50 flex flex-col items-center justify-center';
 
         html += `
             <button onclick="pilihHariJadwal('${item.nama}')" id="pill-hari-${item.nama}" class="pill-jadwal ${btnClass}">
-                <span>${item.nama}</span>
-                <span class="text-[9px] ${isSelected ? 'text-blue-100 font-medium' : 'text-slate-400 font-normal'} mt-0.5">${tglStr}</span>
+                <span class="leading-tight">${item.nama.substring(0, 3)}</span>
+                <span class="text-[9px] ${isSelected ? 'text-blue-100 font-medium' : 'text-slate-400 font-normal'} mt-0.5 leading-tight">${tglStr}</span>
             </button>
         `;
     });
