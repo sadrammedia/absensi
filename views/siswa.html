@@ -70,45 +70,44 @@
             </span>
         </div>
 
-        <!-- Dual Box Berdampingan (Simetris dengan Statistik) -->
+        <!-- Dual Box Berdampingan (Ramping & Teks Waktu Besar) -->
         <div class="grid grid-cols-2 gap-2.5">
             
             <!-- Kartu Masuk (Datang) -->
             <div class="rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white flex flex-col overflow-hidden shadow-[0_4px_12px_rgba(16,185,129,0.3)]">
-                <div class="p-3 flex gap-2.5 items-center">
-                    <!-- Ikon Putih Mencolok -->
-                    <div class="w-9 h-9 rounded-xl bg-white text-emerald-600 flex items-center justify-center shadow-sm shrink-0">
-                        <i class="fas fa-sign-in-alt text-lg"></i>
+                <!-- Padding vertikal dikurangi (py-2) agar ramping -->
+                <div class="px-3 py-2 flex gap-2.5 items-center">
+                    <div class="w-8 h-8 rounded-xl bg-white text-emerald-600 flex items-center justify-center shadow-sm shrink-0">
+                        <i class="fas fa-sign-in-alt text-base"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <span class="text-[10px] font-semibold text-emerald-50 block leading-none mb-1">Datang</span>
-                        <span class="font-mono font-extrabold text-sm md:text-base leading-none drop-shadow-sm truncate block" id="status-val-masuk">-- : --</span>
+                        <span class="text-[10px] font-semibold text-emerald-50 block leading-none mb-0.5">Datang</span>
+                        <!-- Ukuran teks waktu diperbesar drastis (text-xl) -->
+                        <span class="font-mono font-extrabold text-xl leading-none drop-shadow-sm truncate block" id="status-val-masuk">-- : --</span>
                     </div>
                 </div>
-                <!-- Label Status Bawah -->
-                <div class="bg-black/15 backdrop-blur-md px-3 py-2 text-center border-t border-white/10">
+                <!-- Pita bawah dirampingkan (py-1.5) -->
+                <div class="bg-black/15 backdrop-blur-md px-3 py-1.5 text-center border-t border-white/10">
                     <span class="text-[9px] font-bold text-white tracking-wide" id="status-sub-masuk">Belum Absen</span>
                 </div>
             </div>
 
             <!-- Kartu Pulang -->
             <div class="rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white flex flex-col overflow-hidden shadow-[0_4px_12px_rgba(168,85,247,0.3)]">
-                <div class="p-3 flex gap-2.5 items-center">
-                    <!-- Ikon Putih Mencolok -->
-                    <div class="w-9 h-9 rounded-xl bg-white text-purple-600 flex items-center justify-center shadow-sm shrink-0">
-                        <i class="fas fa-sign-out-alt text-lg"></i>
+                <div class="px-3 py-2 flex gap-2.5 items-center">
+                    <div class="w-8 h-8 rounded-xl bg-white text-purple-600 flex items-center justify-center shadow-sm shrink-0">
+                        <i class="fas fa-sign-out-alt text-base"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <span class="text-[10px] font-semibold text-purple-100 block leading-none mb-1">Pulang</span>
-                        <span class="font-mono font-extrabold text-sm md:text-base leading-none drop-shadow-sm truncate block" id="status-val-pulang">-- : --</span>
+                        <span class="text-[10px] font-semibold text-purple-100 block leading-none mb-0.5">Pulang</span>
+                        <!-- Ukuran teks waktu diperbesar drastis (text-xl) -->
+                        <span class="font-mono font-extrabold text-xl leading-none drop-shadow-sm truncate block" id="status-val-pulang">-- : --</span>
                     </div>
                 </div>
-                <!-- Label Status Bawah -->
-                <div class="bg-black/15 backdrop-blur-md px-3 py-2 text-center border-t border-white/10">
+                <div class="bg-black/15 backdrop-blur-md px-3 py-1.5 text-center border-t border-white/10">
                     <span class="text-[9px] font-bold text-white tracking-wide" id="status-sub-pulang">Belum Dibuka</span>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -167,39 +166,40 @@
         </div>
     </div>
 
-    <!-- BANNER PRESTASI & POIN (Cerah, Emas & Elegan) -->
+    <!-- BANNER PRESTASI & POIN (Tema Gelap, Elegan & Kontras Tinggi) -->
     <div class="px-4 mt-4">
-        <div class="bg-gradient-to-br from-white via-amber-50/70 to-orange-50/50 rounded-2xl p-3.5 shadow-sm border border-amber-200 flex items-center relative overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-3.5 shadow-md border border-slate-700 flex items-center relative overflow-hidden">
             <!-- Efek Pendar Latar Bias -->
-            <div class="absolute right-0 bottom-0 w-24 h-24 bg-yellow-400/10 rounded-full blur-xl pointer-events-none"></div>
-            <i class="fas fa-award absolute text-amber-500/5 text-6xl right-12 -bottom-4 pointer-events-none"></i>
+            <div class="absolute right-0 bottom-0 w-24 h-24 bg-yellow-500/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="absolute left-0 top-0 w-24 h-full bg-gradient-to-r from-yellow-500/10 to-transparent pointer-events-none"></div>
+            <i class="fas fa-award absolute text-yellow-500/5 text-6xl right-12 -bottom-4 pointer-events-none"></i>
 
             <!-- Ikon Piala Kiri -->
             <div class="w-11 h-11 flex items-center justify-center shrink-0 relative z-10 mr-3">
-                <i class="fas fa-trophy text-4xl text-yellow-500 drop-shadow-[0_2px_8px_rgba(234,179,8,0.4)]"></i>
+                <i class="fas fa-trophy text-4xl text-yellow-400 drop-shadow-[0_2px_8px_rgba(250,204,21,0.4)]"></i>
             </div>
             
             <!-- Teks Tengah -->
             <div class="flex-1 min-w-0 relative z-10">
-                <h3 class="font-extrabold text-xs text-slate-800 leading-tight" id="banner-prestasi-gelar">Siswa Aktif</h3>
-                <p class="text-[9px] text-slate-500 leading-tight mt-0.5 line-clamp-2" id="banner-prestasi-motivasi">Tingkatkan terus kehadiranmu untuk meraih gelar Teladan.</p>
-                <button onclick="showToast('Rincian Poin akan segera hadir!')" class="mt-1.5 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[9px] font-extrabold shadow-sm border border-amber-200 hover:bg-amber-200 active:scale-95 transition-all">
+                <h3 class="font-extrabold text-xs text-white leading-tight" id="banner-prestasi-gelar">Siswa Aktif</h3>
+                <p class="text-[9px] text-slate-300 leading-tight mt-0.5 line-clamp-2" id="banner-prestasi-motivasi">Tingkatkan terus kehadiranmu untuk meraih gelar Teladan.</p>
+                <button onclick="showToast('Rincian Poin akan segera hadir!')" class="mt-1.5 bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 px-3 py-1 rounded-full text-[9px] font-extrabold shadow-sm hover:scale-105 active:scale-95 transition-all border border-yellow-300">
                     Lihat Poin
                 </button>
             </div>
             
             <!-- Poin Kanan -->
-            <div class="flex flex-col items-center justify-center shrink-0 pl-3 border-l border-amber-200 relative z-10 ml-2">
+            <div class="flex flex-col items-center justify-center shrink-0 pl-3 border-l border-slate-600 relative z-10 ml-2">
                 <!-- Animasi Bintang (Diatur oleh JS) -->
-                <div class="flex gap-0.5 text-yellow-500 text-[10px] mb-0.5 animate-pulse" id="banner-prestasi-bintang">
+                <div class="flex gap-0.5 text-yellow-400 text-[10px] mb-0.5 animate-pulse" id="banner-prestasi-bintang">
                     <i class="fas fa-star"></i>
                     <i class="far fa-star"></i>
                     <i class="far fa-star"></i>
                 </div>
                 <div class="flex items-baseline gap-1">
-                    <span class="font-mono font-extrabold text-xl text-amber-600 drop-shadow-sm" id="banner-prestasi-poin">0</span>
+                    <span class="font-mono font-extrabold text-xl text-yellow-400 drop-shadow-sm" id="banner-prestasi-poin">0</span>
                 </div>
-                <span class="text-[8px] font-extrabold text-amber-500 uppercase tracking-widest">Poin</span>
+                <span class="text-[8px] font-extrabold text-yellow-500 uppercase tracking-widest">Poin</span>
             </div>
         </div>
     </div>
