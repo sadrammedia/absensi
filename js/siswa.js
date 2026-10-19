@@ -1568,7 +1568,8 @@ async function loadStatistikKehadiranBulanIni() {
         // 2. Jumlahkan semuanya: Hadir + Izin + Saldo Game
         const poinHadir = (totalHadir * 10);
         const poinIzin = (totalIzin * 2);
-        const poinGame = currentUser.saldo_game || 0;        
+        const poinGame = currentUser.saldo_game || 0;
+        
         const totalPoin = poinHadir + poinIzin + poinGame; 
         
         const elPoin = document.getElementById('banner-prestasi-poin');
