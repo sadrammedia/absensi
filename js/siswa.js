@@ -1199,21 +1199,21 @@ async function loadJadwalSiswa(hari) {
         container.innerHTML = '';
         data.forEach((item, index) => {
             const card = document.createElement('div');
-            card.className = "bg-white rounded-2xl p-4 shadow-[0_3px_15px_rgba(0,0,0,0.03)] border border-gray-100 flex items-start gap-4 hover:shadow-md transition-all";
+            card.className = "bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center gap-4 hover:border-purple-200 transition-all";
             card.innerHTML = `
-                <div class="flex flex-col items-center justify-center bg-purple-50 text-purple-700 rounded-xl px-3 py-2 min-w-[70px] shrink-0 border border-purple-100">
-                    <span class="text-xs font-extrabold">${item.jam_mulai}</span>
-                    <span class="text-[9px] text-purple-400 font-bold my-0.5">s/d</span>
-                    <span class="text-xs font-extrabold">${item.jam_selesai}</span>
+                <div class="flex flex-col items-center justify-center bg-purple-50 text-purple-700 rounded-2xl px-3.5 py-2.5 min-w-[75px] shrink-0 border border-purple-100/80 shadow-sm">
+                    <span class="text-xs font-extrabold font-mono">${item.jam_mulai}</span>
+                    <span class="text-[8px] text-purple-400 font-bold my-0.5 uppercase tracking-widest">s/d</span>
+                    <span class="text-xs font-extrabold font-mono">${item.jam_selesai}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start mb-1">
-                        <h4 class="font-extrabold text-gray-800 text-sm leading-snug truncate" title="${item.mapel}">${item.mapel}</h4>
-                        <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[9px] font-bold shrink-0 ml-2">
-                            <i class="fas fa-door-open mr-1"></i>${item.ruang || 'Kelas'}
+                        <h4 class="font-extrabold text-slate-800 text-xs leading-snug truncate" title="${item.mapel}">${item.mapel}</h4>
+                        <span class="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full text-[9px] font-bold shrink-0 ml-2 border border-slate-200/60">
+                            <i class="fas fa-door-open mr-1 text-purple-500"></i>${item.ruang || 'Kelas'}
                         </span>
                     </div>
-                    <p class="text-xs text-gray-500 font-medium flex items-center gap-1.5 mt-1">
+                    <p class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-1">
                         <i class="fas fa-chalkboard-teacher text-purple-500"></i> ${item.guru || '-'}
                     </p>
                 </div>
