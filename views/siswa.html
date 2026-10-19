@@ -747,81 +747,73 @@
 </div>
 
 <!-- ========================================== -->
-<!-- MODAL LACI BAWAH: RINCIAN POIN SISWA -->
+<!-- MODAL LACI BAWAH: RINCIAN POIN & KLASEMEN -->
 <!-- ========================================== -->
 <div id="sheet-rincian-poin" class="fixed inset-0 z-[60] flex flex-col justify-end hidden">
     <!-- Overlay Gelap (Tutup panel jika diklik) -->
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="sheet-poin-overlay" onclick="tutupSheetPoin()"></div>
     
     <!-- Konten Laci -->
-    <div class="bg-slate-900 w-full rounded-t-[2.5rem] p-5 pb-8 relative z-10 transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-slate-700/50" id="sheet-poin-content">
+    <div class="bg-slate-900 w-full rounded-t-[2.5rem] p-5 pb-8 relative z-10 transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-slate-700/50 flex flex-col h-[75vh]" id="sheet-poin-content">
         <!-- Handle Tarikan (Visual) -->
-        <div class="w-12 h-1.5 bg-slate-600 rounded-full mx-auto mb-5"></div>
+        <div class="w-12 h-1.5 bg-slate-600 rounded-full mx-auto mb-4 shrink-0"></div>
         
-        <!-- Header Laci -->
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
-                    <i class="fas fa-coins text-yellow-400 text-lg"></i>
+        <!-- Header & Sakelar Tab -->
+        <div class="shrink-0 mb-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                        <i class="fas fa-medal text-yellow-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-white text-lg leading-tight">Prestasi</h3>
+                        <p class="text-[10px] text-slate-400 font-medium">Bulan Ini</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="font-extrabold text-white text-lg leading-tight">Rincian Poin</h3>
-                    <p class="text-[10px] text-slate-400 font-medium">Bulan Ini</p>
+                <div class="text-right">
+                    <span class="block font-mono font-extrabold text-2xl text-yellow-400 leading-none" id="sheet-total-poin">0</span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Poin Saya</span>
                 </div>
             </div>
-            <div class="text-right">
-                <span class="block font-mono font-extrabold text-2xl text-yellow-400 leading-none" id="sheet-total-poin">0</span>
-                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Poin</span>
+
+            <!-- Sakelar Tab Bergaya Kapsul -->
+            <div class="bg-slate-800 p-1 rounded-full flex relative">
+                <div id="slider-bg-tab" class="absolute h-8 bg-slate-600 rounded-full transition-all duration-300 z-0" style="width: 50%; left: 0;"></div>
+                <button onclick="switchTabPoin('riwayat')" id="btn-tab-riwayat" class="flex-1 py-1.5 text-xs font-bold text-white relative z-10 transition-colors">Poin Saya</button>
+                <button onclick="switchTabPoin('klasemen')" id="btn-tab-klasemen" class="flex-1 py-1.5 text-xs font-bold text-slate-400 relative z-10 transition-colors">Klasemen Kelas</button>
             </div>
         </div>
 
-        <!-- Wadah List Poin -->
-        <div class="space-y-3 mb-6 max-h-[40vh] overflow-y-auto custom-scroll pr-1" id="list-rincian-poin">
-            <!-- (Isi akan digenerate oleh JS) -->
-            <p class="text-center text-xs text-slate-500 py-4">Memuat rincian poin...</p>
-        </div>
+        <!-- Wadah Area Scroll -->
+        <div class="flex-1 overflow-y-auto custom-scroll pr-1 relative mb-4">
+            
+            <!-- 1. KONTEN TAB: RIWAYAT POIN SAYA -->
+            <div id="konten-tab-riwayat" class="space-y-3 pb-2 transition-opacity duration-300">
+                <div id="list-rincian-poin">
+                    <p class="text-center text-xs text-slate-500 py-4">Memuat rincian poin...</p>
+                </div>
+            </div>
 
-        <!-- Tombol Teaser Arcade -->
-        <button onclick="showToast('Mini Games sedang dibangun. Kumpulkan terus poinmu!')" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 font-extrabold py-3.5 rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
+            <!-- 2. KONTEN TAB: KLASEMEN KELAS (LEADERBOARD) -->
+            <div id="konten-tab-klasemen" class="space-y-3 pb-2 hidden absolute inset-0 transition-opacity duration-300">
+                <div class="bg-slate-800/60 border border-slate-700 p-3 rounded-2xl flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-users text-blue-400"></i>
+                        <span class="text-xs font-bold text-slate-200" id="label-klasemen-kelas">Kelas ...</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400" id="info-pesaing">Memuat data...</span>
+                </div>
+                
+                <div id="list-klasemen-poin" class="space-y-2.5">
+                    <p class="text-center text-xs text-slate-500 py-4"><i class="fas fa-spinner fa-spin mr-1"></i> Menghitung posisi...</p>
+                </div>
+            </div>
+            
+        </div> <!-- End Scroll Area -->
+
+        <!-- Tombol Teaser Arcade (Di Paling Bawah) -->
+        <button onclick="showToast('Mini Games sedang dibangun. Kumpulkan terus poinmu!')" class="w-full shrink-0 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 font-extrabold py-3.5 rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
             <i class="fas fa-gamepad text-lg"></i> <span>Tukar Poin di Arcade <span class="text-[9px] bg-slate-900 text-yellow-400 px-1.5 py-0.5 rounded-md ml-1 opacity-80">(Segera)</span></span>
         </button>
     </div>
-</div>
-
-<!-- Bottom Navigation (Siswa) -->
-<div class="absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-50 rounded-t-3xl">            
-    <button onclick="switchTabMobile('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center relative w-14 active-nav group">
-        <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
-            <i class="fas fa-home text-[20px] drop-shadow-sm"></i>
-        </div>
-        <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Beranda</span>
-    </button>
-
-    <button onclick="switchTabMobile('histori')" id="nav-histori" class="nav-item flex flex-col items-center relative w-14 group">
-        <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
-            <i class="fas fa-history text-[20px] drop-shadow-sm"></i>
-        </div>
-        <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Riwayat</span>
-    </button>
-
-    <div class="nav-fab-container">
-        <button onclick="triggerAbsenFAB()" class="nav-fab-btn bg-gradient-to-tr from-teal-500 to-emerald-400 shadow-[0_10px_20px_rgba(16,185,129,0.4)] hover:-translate-y-1">
-            <i class="fas fa-fingerprint text-3xl drop-shadow-md"></i>
-        </button>
-        <span class="text-[10px] font-bold text-emerald-600 mt-9 mb-1">Absen</span>
-    </div>
-
-    <button onclick="switchTabMobile('izin')" id="nav-izin" class="nav-item flex flex-col items-center relative w-14 group">
-        <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
-            <i class="fas fa-envelope-open-text text-[20px] drop-shadow-sm"></i>
-        </div>
-        <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Izin</span>
-    </button>
-
-    <button onclick="switchTabMobile('menu')" id="nav-menu" class="nav-item flex flex-col items-center relative w-14 group">
-        <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
-            <i class="fas fa-th-large text-[20px] drop-shadow-sm"></i>
-        </div>
-        <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Menu</span>
-    </button>
 </div>
