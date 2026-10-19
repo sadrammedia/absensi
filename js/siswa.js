@@ -1404,7 +1404,7 @@ async function refreshDashboardSmartCard() {
             }
             if (elDot) elDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping";
             elValMasuk.innerText = "--:--";
-            elSubMasuk.innerText = "Gunakan Tombol Bawah";
+            elSubMasuk.innerText = "Belum Absen";
             elValPulang.innerText = "--:--";
             elSubPulang.innerText = "Belum Dibuka";
         }
@@ -1560,6 +1560,31 @@ async function loadStatistikKehadiranBulanIni() {
         if (elIzin) elIzin.innerText = totalIzin;
         if (elPersen) elPersen.innerText = `${persentase}%`;
 
+        // --- LOGIKA POIN & PRESTASI (GAMIFICATION DASAR) ---
+        // Asumsi sementara: 1 Hadir = 10 Poin, 1 Izin = 2 Poin
+        const totalPoin = (totalHadir * 10) + (totalIzin * 2);         
+        const elPoin = document.getElementById('banner-prestasi-poin');
+        const elGelar = document.getElementById('banner-prestasi-gelar');
+        const elMotivasi = document.getElementById('banner-prestasi-motivasi');
+        const elBintang = document.getElementById('banner-prestasi-bintang');
+
+        if (elPoin) elPoin.innerText = totalPoin;
+
+        // Tentukan Gelar dan Bintang berdasarkan jumlah Poin
+        if (totalPoin >= 200) {
+            if(elGelar) elGelar.innerText = "Siswa Teladan";
+            if(elMotivasi) elMotivasi.innerText = "Luar biasa! Kehadiran dan kedisiplinanmu patut diacungi jempol.";
+            if(elBintang) elBintang.innerHTML = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
+        } else if (totalPoin >= 100) {
+            if(elGelar) elGelar.innerText = "Siswa Rajin";
+            if(elMotivasi) elMotivasi.innerText = "Bagus sekali! Pertahankan terus semangat belajarmu.";
+            if(elBintang) elBintang.innerHTML = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>';
+        } else {
+            if(elGelar) elGelar.innerText = "Siswa Aktif";
+            if(elMotivasi) elMotivasi.innerText = "Ayo tingkatkan terus kehadiranmu untuk meraih gelar Teladan.";
+            if(elBintang) elBintang.innerHTML = '<i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>';
+        }
+        // ---------------------------------------------------
     } catch (e) {
         console.error("Gagal load statistik kehadiran bulanan:", e);
     }
