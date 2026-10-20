@@ -862,6 +862,30 @@ function resetUIKeModeJepret() {
 async function processAbsenToCloud() {
     const btnSubmit = document.getElementById('btn-submit-absen');
     const btnRetake = document.getElementById('btn-retake-photo');
+
+    // --- 1. DETEKSI MANIPULASI WAKTU (ANTI-CHEAT) ---
+    try {
+        const waktuServer = await getServerTime(); // Mengambil waktu akurat dari server/API
+        const waktuLokal = new Date();
+        
+        // Hitung selisih waktu dalam menit antara HP siswa dengan Server
+        const selisihMenit = Math.abs((waktuServer - waktuLokal) / (1000 * 60));
+        
+        // Jika selisih lebih dari 3 menit, artinya jam HP sengaja dimanipulasi
+        if (selisihMenit > 3) {
+            // Tampilkan peringatan keras ke siswa
+            showToast('⚠️ Peringatan: Mohon aktifkan "Waktu Otomatis" di pengaturan HP Anda!', true);
+            
+            // (Opsional) Catat log percobaan kecurangan ke database jika diperlukan
+            console.warn(`Percobaan manipulasi waktu terdeteksi oleh NIS: ${currentUser.nis}`);
+            
+            // Batalkan proses absen
+            return;
+        }
+    } catch (e) {
+        console.error("Gagal melakukan verifikasi waktu server:", e);
+    }
+    // ------------------------------------------------
     
     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
     btnSubmit.disabled = true;
