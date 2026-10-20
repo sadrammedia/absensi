@@ -682,6 +682,43 @@ function stopCamera() {
 }
 
 async function openScanner(type) {
+    // ========================================================
+    // 1. PINTU DEPAN: DETEKSI ANTI-CHEAT (MANIPULASI WAKTU)
+    // ========================================================
+    try {
+        const waktuServer = await getServerTime(); 
+        const waktuLokal = new Date();
+        const selisihMenit = Math.abs((waktuServer - waktuLokal) / (1000 * 60));
+        
+        // Jika selisih lebih dari 3 menit, langsung TENDANG!
+        if (selisihMenit > 3) {
+            showToast('⚠️ Peringatan: Mohon aktifkan "Waktu Otomatis" di pengaturan telepon Anda!', true);
+            
+            // Catat ke log kecurangan di database
+            try {
+                await db.from('tabel_log_kecurangan').insert([{
+                    nis: currentUser.nis,
+                    nama: currentUser.nama,
+                    kelas: currentUser.kelas || '-',
+                    aktivitas: `Mencoba buka scanner absen ${type} dengan manipulasi jam`,
+                    waktu_lokal_hp: waktuLokal.toLocaleString('id-ID')
+                }]);
+            } catch (logErr) {
+                console.error("Gagal mengirim log kecurangan:", logErr);
+            }
+            
+            // Hentikan fungsi di sini, jangan biarkan aplikasi mengecek jadwal!
+            return; 
+        }
+    } catch (e) {
+        return showToast('⚠️ Verifikasi waktu gagal. Pastikan internet stabil.', true);
+    }
+    // ========================================================
+
+
+    // ========================================================
+    // 2. PENGECEKAN JADWAL BAWAAN (Hanya jalan jika Anti-Cheat aman)
+    // ========================================================
     try {
         const { data } = await db.from('tabel_pengaturan').select('*').limit(1).maybeSingle();
         if (data) cachedPengaturan = data;
@@ -742,6 +779,7 @@ async function openScanner(type) {
         }
     }
     
+    // Jika semua lolos (Waktu aman, Jadwal pas, GPS cocok), baru buka Kamera!
     tampilkanScannerUI(type);
 }
 
@@ -858,64 +896,34 @@ function resetUIKeModeJepret() {
     document.getElementById('scan-text').className = "text-green-400 font-semibold text-sm";
 }
 
-// Alur 3: Kirim Foto ke Cloud Supabase (Dengan Anti-Cheat Ketat)
+// Alur 3: Kirim Foto ke Cloud Supabase (Lebih Bersih & Efisien)
 async function processAbsenToCloud() {
     const btnSubmit = document.getElementById('btn-submit-absen');
     const btnRetake = document.getElementById('btn-retake-photo');
     
     // Kunci tombol langsung agar siswa tidak spam klik
-    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memvalidasi Keamanan...';
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyiapkan Data...';
     btnSubmit.disabled = true;
     btnRetake.disabled = true;
 
     let dateObj;
 
-    // --- FITUR ANTI-CHEAT: DETEKSI MANIPULASI WAKTU ---
+    // --- CUKUP AMBIL WAKTU SERVER (Tanpa perlu deteksi selisih lagi di sini) ---
     try {
-        // Ambil waktu dari fungsi strict di config.js
         dateObj = await getServerTime(); 
-        const waktuLokal = new Date();
-        
-        // Hitung selisih mutlak dalam menit
-        const selisihMenit = Math.abs((dateObj - waktuLokal) / (1000 * 60));
-        
-        // Jika selisih lebih dari 3 menit = TERDETEKSI CURANG
-        if (selisihMenit > 3) {
-            showToast('⚠️ Peringatan: Mohon aktifkan "Waktu Otomatis" di pengaturan telepon Anda!', true);
-            
-            // Tembak Log Kecurangan ke Database
-            try {
-                await db.from('tabel_log_kecurangan').insert([{
-                    nis: currentUser.nis,
-                    nama: currentUser.nama,
-                    kelas: currentUser.kelas || '-',
-                    aktivitas: `Manipulasi jam saat absen ${currentAbsenType}`,
-                    waktu_lokal_hp: waktuLokal.toLocaleString('id-ID')
-                }]);
-            } catch (logErr) {
-                console.error("Gagal log:", logErr);
-            }
-
-            // BATALKAN ABSEN (Buka kunci tombol lalu hentikan proses)
-            btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
-            btnSubmit.disabled = false;
-            btnRetake.disabled = false;
-            return; // <-- INI YANG MENCEGAH DATA MASUK KE DATABASE
-        }
     } catch (e) {
-        // JIKA GAGAL DAPAT WAKTU SERVER (Offline / Diblokir)
-        showToast('⚠️ Verifikasi waktu gagal. Pastikan internet stabil & matikan pemblokir iklan.', true);
-        
+        // Blokir jika tiba-tiba internet mati saat mau kirim foto
+        showToast('⚠️ Gagal terhubung ke server waktu. Pastikan internet stabil.', true);
         btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
         btnSubmit.disabled = false;
         btnRetake.disabled = false;
-        return; // <-- BATALKAN ABSEN
+        return; 
     }
-    // ------------------------------------------------
+    // --------------------------------------------------------------------------
 
-    // Jika aman, lanjut ekstrak tanggal dari dateObj (Waktu Server Asli)
     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim Data...';
     
+    // Ekstrak tanggal dari dateObj (Waktu Server Asli)
     const yyyy = dateObj.getFullYear();
     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(dateObj.getDate()).padStart(2, '0');
@@ -943,11 +951,8 @@ async function processAbsenToCloud() {
             if (existData && existData.jam_masuk) {
                 showToast('Anda sudah absen masuk hari ini!', true);
             } else if (existData && !existData.jam_masuk) {
-                // Kasus langka: Sudah ada baris (mungkin dari absen pulang duluan), lalu mau absen masuk
-                // Ini dicegah karena tidak logis
                 showToast('Gagal: Waktu absen masuk sudah terlewat.', true);
             } else {
-                // Normal: Buat baris absen masuk baru
                 const payload = {
                     nis: currentUser.nis,
                     nama: currentUser.nama,
@@ -969,7 +974,6 @@ async function processAbsenToCloud() {
             if (existData && existData.jam_pulang) {
                 showToast('Anda sudah absen pulang hari ini!', true);
             } else if (existData && !existData.jam_pulang) {
-                // Normal: Sudah absen masuk pagi harinya, tinggal update jam pulang
                 const payload = { jam_pulang: jamSekarang, status_pulang: 'Hadir' };
                 if (urlFotoBukti) payload.foto_pulang = urlFotoBukti;
 
@@ -979,8 +983,6 @@ async function processAbsenToCloud() {
                 triggerHapticSuccess();
                 showToast('Absen Pulang Berhasil!');
             } else if (!existData) {
-                // KONDISI BARU: Belum absen masuk sama sekali, tapi maksa absen pulang di sore hari
-                // Kita buatkan baris INSERT baru, tapi biarkan jam_masuk kosong
                 const payload = {
                     nis: currentUser.nis,
                     nama: currentUser.nama,
@@ -1005,7 +1007,6 @@ async function processAbsenToCloud() {
     } finally {
         closeScanner();
 
-        // Segarkan otomatis kartu status & statistik dashboard siswa
         if (typeof refreshDashboardSmartCard === 'function') refreshDashboardSmartCard();
         if (typeof loadStatistikKehadiranBulanIni === 'function') loadStatistikKehadiranBulanIni();
 
