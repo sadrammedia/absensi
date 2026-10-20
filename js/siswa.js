@@ -858,52 +858,64 @@ function resetUIKeModeJepret() {
     document.getElementById('scan-text').className = "text-green-400 font-semibold text-sm";
 }
 
-// Alur 3: Kirim Foto ke Cloud Supabase (Dengan Anti-Cheat & Log Server)
+// Alur 3: Kirim Foto ke Cloud Supabase (Dengan Anti-Cheat Ketat)
 async function processAbsenToCloud() {
     const btnSubmit = document.getElementById('btn-submit-absen');
     const btnRetake = document.getElementById('btn-retake-photo');
     
+    // Kunci tombol langsung agar siswa tidak spam klik
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memvalidasi Keamanan...';
+    btnSubmit.disabled = true;
+    btnRetake.disabled = true;
+
+    let dateObj;
+
     // --- FITUR ANTI-CHEAT: DETEKSI MANIPULASI WAKTU ---
     try {
-        // Ambil waktu akurat dari server/API internet global (World Time API)
-        const waktuServer = await getServerTime(); 
+        // Ambil waktu dari fungsi strict di config.js
+        dateObj = await getServerTime(); 
         const waktuLokal = new Date();
         
         // Hitung selisih mutlak dalam menit
-        const selisihMenit = Math.abs((waktuServer - waktuLokal) / (1000 * 60));
+        const selisihMenit = Math.abs((dateObj - waktuLokal) / (1000 * 60));
         
-        // Jika selisih lebih dari 3 menit, artinya jam HP sengaja dimanipulasi
+        // Jika selisih lebih dari 3 menit = TERDETEKSI CURANG
         if (selisihMenit > 3) {
-            // 1. Munculkan notifikasi teguran keras ke HP siswa
             showToast('⚠️ Peringatan: Mohon aktifkan "Waktu Otomatis" di pengaturan telepon Anda!', true);
             
-            // 2. Kirim Log Percobaan Kecurangan ke Server Database Supabase (Opsional/Audit Admin)
+            // Tembak Log Kecurangan ke Database
             try {
                 await db.from('tabel_log_kecurangan').insert([{
                     nis: currentUser.nis,
                     nama: currentUser.nama,
                     kelas: currentUser.kelas || '-',
-                    aktivitas: `Percobaan manipulasi jam saat absen ${currentAbsenType}`,
-                    waktu_lokal_hp: waktuLokal.toLocaleString('id-ID'),
-                    created_at: new Date().toISOString()
+                    aktivitas: `Manipulasi jam saat absen ${currentAbsenType}`,
+                    waktu_lokal_hp: waktuLokal.toLocaleString('id-ID')
                 }]);
             } catch (logErr) {
-                console.error("Gagal mengirim log kecurangan ke server:", logErr);
+                console.error("Gagal log:", logErr);
             }
 
-            // Batalkan proses kirim absen
-            return;
+            // BATALKAN ABSEN (Buka kunci tombol lalu hentikan proses)
+            btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
+            btnSubmit.disabled = false;
+            btnRetake.disabled = false;
+            return; // <-- INI YANG MENCEGAH DATA MASUK KE DATABASE
         }
     } catch (e) {
-        console.error("Gagal memvalidasi waktu server:", e);
+        // JIKA GAGAL DAPAT WAKTU SERVER (Offline / Diblokir)
+        showToast('⚠️ Verifikasi waktu gagal. Pastikan internet stabil & matikan pemblokir iklan.', true);
+        
+        btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
+        btnSubmit.disabled = false;
+        btnRetake.disabled = false;
+        return; // <-- BATALKAN ABSEN
     }
     // ------------------------------------------------
-    
-    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
-    btnSubmit.disabled = true;
-    btnRetake.disabled = true;
 
-    const dateObj = await getServerTime();
+    // Jika aman, lanjut ekstrak tanggal dari dateObj (Waktu Server Asli)
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim Data...';
+    
     const yyyy = dateObj.getFullYear();
     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(dateObj.getDate()).padStart(2, '0');
