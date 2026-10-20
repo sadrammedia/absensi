@@ -858,32 +858,44 @@ function resetUIKeModeJepret() {
     document.getElementById('scan-text').className = "text-green-400 font-semibold text-sm";
 }
 
-// Alur 3: Kirim Foto ke Cloud Supabase
+// Alur 3: Kirim Foto ke Cloud Supabase (Dengan Anti-Cheat & Log Server)
 async function processAbsenToCloud() {
     const btnSubmit = document.getElementById('btn-submit-absen');
     const btnRetake = document.getElementById('btn-retake-photo');
-
-    // --- 1. DETEKSI MANIPULASI WAKTU (ANTI-CHEAT) ---
+    
+    // --- FITUR ANTI-CHEAT: DETEKSI MANIPULASI WAKTU ---
     try {
-        const waktuServer = await getServerTime(); // Mengambil waktu akurat dari server/API
+        // Ambil waktu akurat dari server/API internet global (World Time API)
+        const waktuServer = await getServerTime(); 
         const waktuLokal = new Date();
         
-        // Hitung selisih waktu dalam menit antara HP siswa dengan Server
+        // Hitung selisih mutlak dalam menit
         const selisihMenit = Math.abs((waktuServer - waktuLokal) / (1000 * 60));
         
         // Jika selisih lebih dari 3 menit, artinya jam HP sengaja dimanipulasi
         if (selisihMenit > 3) {
-            // Tampilkan peringatan keras ke siswa
-            showToast('⚠️ Peringatan: Mohon aktifkan "Waktu Otomatis" di pengaturan HP Anda!', true);
+            // 1. Munculkan notifikasi teguran keras ke HP siswa
+            showToast('⚠️ Peringatan: Mohon aktifkan "Waktu Otomatis" di pengaturan telepon Anda!', true);
             
-            // (Opsional) Catat log percobaan kecurangan ke database jika diperlukan
-            console.warn(`Percobaan manipulasi waktu terdeteksi oleh NIS: ${currentUser.nis}`);
-            
-            // Batalkan proses absen
+            // 2. Kirim Log Percobaan Kecurangan ke Server Database Supabase (Opsional/Audit Admin)
+            try {
+                await db.from('tabel_log_kecurangan').insert([{
+                    nis: currentUser.nis,
+                    nama: currentUser.nama,
+                    kelas: currentUser.kelas || '-',
+                    aktivitas: `Percobaan manipulasi jam saat absen ${currentAbsenType}`,
+                    waktu_lokal_hp: waktuLokal.toLocaleString('id-ID'),
+                    created_at: new Date().toISOString()
+                }]);
+            } catch (logErr) {
+                console.error("Gagal mengirim log kecurangan ke server:", logErr);
+            }
+
+            // Batalkan proses kirim absen
             return;
         }
     } catch (e) {
-        console.error("Gagal melakukan verifikasi waktu server:", e);
+        console.error("Gagal memvalidasi waktu server:", e);
     }
     // ------------------------------------------------
     
