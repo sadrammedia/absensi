@@ -658,6 +658,11 @@ async function startCamera() {
         
         videoElement.srcObject = cameraStream;
         videoElement.classList.remove('hidden'); 
+        
+        // --- KODE BARU: Membalikkan layar kamera layaknya cermin ---
+        videoElement.style.transform = 'scaleX(-1)';
+        // -----------------------------------------------------------
+
         scanTitle.innerText = "Posisikan Wajah";
         scanText.innerText = "Kamera Aktif & Siap Jepret";
         scanText.className = "text-green-400 font-semibold text-sm";
@@ -834,6 +839,8 @@ async function handleAmbilFoto() {
         canvas.width = targetWidth;
         canvas.height = targetHeight;
         const ctx = canvas.getContext('2d');
+        
+        // Canvas menggambar foto asli (TIDAK terbalik) dari lensa
         ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
         
         const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
@@ -843,6 +850,11 @@ async function handleAmbilFoto() {
         // Tampilkan gambar pratinjau di layar frame hexagon
         const imgPreview = document.getElementById('camera-preview-captured');
         imgPreview.src = dataUrl;
+        
+        // --- KODE BARU: Pratinjau di layar siswa ikut dibuat efek cermin ---
+        imgPreview.style.transform = 'scaleX(-1)';
+        // -------------------------------------------------------------------
+        
         imgPreview.classList.remove('hidden');
 
         // Sembunyikan video live dan hentikan stream agar hemat baterai
