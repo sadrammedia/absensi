@@ -116,41 +116,28 @@ async function cekKoneksiDB() {
 }
 
 // ==========================================
-// MESIN WAKTU ANTI-CHEAT (JAM INTERNET MURNI)
+// MESIN WAKTU ANTI-CHEAT (STRICT MODE)
 // ==========================================
 async function getServerTime() {
     try {
-        // PERCOBAAN 1: Tarik jam mutlak dari World Time API (Zona Jakarta)
-        // cache: 'no-store' mencegah browser mode samaran memberikan jam usang
-        const res1 = await fetch('https://worldtimeapi.org/api/timezone/Asia/Jakarta', { 
-            cache: 'no-store' 
-        });
-        
+        const res1 = await fetch('https://worldtimeapi.org/api/timezone/Asia/Jakarta', { cache: 'no-store' });
         if (res1.ok) {
-            const data1 = await res1.json();
-            return new Date(data1.datetime);
+            const data = await res1.json();
+            return new Date(data.datetime);
         }
-        throw new Error("WorldTimeAPI tidak merespons");
-
+        throw new Error("API 1 Gagal");
     } catch (e1) {
-        console.warn("⚠️ API Waktu 1 terblokir, mencoba API cadangan...", e1);
-        
         try {
-            // PERCOBAAN 2: Fallback ke TimeAPI.io jika server pertama down
-            const res2 = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Asia/Jakarta', {
-                cache: 'no-store'
-            });
-            
+            const res2 = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Asia/Jakarta', { cache: 'no-store' });
             if (res2.ok) {
-                const data2 = await res2.json();
-                return new Date(data2.dateTime);
+                const data = await res2.json();
+                return new Date(data.dateTime);
             }
-            throw new Error("TimeAPI gagal");
-            
+            throw new Error("API 2 Gagal");
         } catch (e2) {
-            console.warn("⚠️ Semua API Waktu gagal diakses. Pasrah ke jam lokal...", e2);
-            // Kondisi darurat jika koneksi internet siswa sangat buruk atau API diblokir provider
-            return new Date(); 
+            // TIDAK ADA LAGI TOLERANSI MENGGUNAKAN JAM HP LOKAL (new Date)!
+            // Jika gagal menembus server waktu, gagalkan prosesnya.
+            throw new Error("Gagal verifikasi Waktu Server Global. Pastikan internet stabil.");
         }
     }
 }
