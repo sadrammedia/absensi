@@ -111,57 +111,54 @@
         </div>
     </div>
 
-    <!-- 3. Statistik Bulan Ini (Restorasi Ikon & Desain seperti Gambar) -->
+    <!-- 3. Statistik Bulan Ini (Desain Baru Menyerupai Gambar 2) -->
     <div class="px-4 mt-4">
         <div class="flex justify-between items-center mb-2 px-0.5">
             <h3 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Statistik Bulan Ini</h3>
-            <span class="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100/60">Semester Aktif</span>
+            <span class="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100/60 badge-semester">Semester Aktif</span>
         </div>
 
         <div class="grid grid-cols-3 gap-2.5">
-            <!-- Hadir (Mint Soft) -->
-            <div class="relative overflow-hidden rounded-2xl p-3 bg-emerald-50 border border-emerald-100 shadow-sm flex flex-col">
-                <div class="flex items-center gap-1.5 mb-2 relative z-10">
-                    <div class="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center text-[9px] shrink-0 shadow-sm">
+            <!-- Hadir -->
+            <div class="relative overflow-hidden rounded-2xl p-3 bg-white border border-slate-100 shadow-sm flex flex-col justify-between min-h-[95px] stat-card-hadir">
+                <div class="flex justify-between items-start mb-2 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm shadow-sm">
                         <i class="fas fa-user-check"></i>
                     </div>
-                    <span class="text-[10px] font-extrabold text-emerald-700">Hadir</span>
+                    <span class="text-[8px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 stat-badge">Hadir</span>
                 </div>
                 <div class="relative z-10">
-                    <span class="font-mono font-extrabold text-xl md:text-2xl text-emerald-900 leading-none block" id="kpi-hadir">0</span>
-                    <span class="text-[8px] md:text-[9px] text-emerald-600 font-semibold block mt-1">Hari Sekolah</span>
+                    <span class="font-mono font-extrabold text-xl text-emerald-600 leading-none block" id="kpi-hadir">0</span>
+                    <span class="text-[8px] text-slate-500 font-semibold block mt-1 stat-subtitle">Hari Sekolah</span>
                 </div>
-                <i class="fas fa-check-circle absolute -right-2 -bottom-2 text-4xl text-emerald-500/10 pointer-events-none"></i>
             </div>
 
-            <!-- Izin (Amber/Oranye Soft) -->
-            <div class="relative overflow-hidden rounded-2xl p-3 bg-amber-50 border border-amber-100 shadow-sm flex flex-col">
-                <div class="flex items-center gap-1.5 mb-2 relative z-10">
-                    <div class="w-5 h-5 rounded-md bg-amber-500 text-white flex items-center justify-center text-[9px] shrink-0 shadow-sm">
+            <!-- Izin -->
+            <div class="relative overflow-hidden rounded-2xl p-3 bg-white border border-slate-100 shadow-sm flex flex-col justify-between min-h-[95px] stat-card-izin">
+                <div class="flex justify-between items-start mb-2 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-sm shadow-sm">
                         <i class="fas fa-envelope-open-text"></i>
                     </div>
-                    <span class="text-[10px] font-extrabold text-amber-700">Izin</span>
+                    <span class="text-[8px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 stat-badge">Izin</span>
                 </div>
                 <div class="relative z-10">
-                    <span class="font-mono font-extrabold text-xl md:text-2xl text-amber-900 leading-none block" id="kpi-izin">0</span>
-                    <span class="text-[8px] md:text-[9px] text-amber-600 font-semibold block mt-1">Pengajuan</span>
+                    <span class="font-mono font-extrabold text-xl text-amber-500 leading-none block" id="kpi-izin">0</span>
+                    <span class="text-[8px] text-slate-500 font-semibold block mt-1 stat-subtitle">Pengajuan</span>
                 </div>
-                <i class="fas fa-envelope-open absolute -right-2 -bottom-2 text-4xl text-amber-500/10 pointer-events-none"></i>
             </div>
 
-            <!-- Persentase Disiplin (Sky/Blue Soft) -->
-            <div class="relative overflow-hidden rounded-2xl p-3 bg-blue-50 border border-blue-100 shadow-sm flex flex-col">
-                <div class="flex items-center gap-1.5 mb-2 relative z-10">
-                    <div class="w-5 h-5 rounded-md bg-blue-500 text-white flex items-center justify-center text-[9px] shrink-0 shadow-sm">
+            <!-- Disiplin -->
+            <div class="relative overflow-hidden rounded-2xl p-3 bg-white border border-slate-100 shadow-sm flex flex-col justify-between min-h-[95px] stat-card-disiplin">
+                <div class="flex justify-between items-start mb-2 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-blue-500 text-white flex items-center justify-center text-sm shadow-sm">
                         <i class="fas fa-percentage"></i>
                     </div>
-                    <span class="text-[10px] font-extrabold text-blue-700">Disiplin</span>
+                    <span class="text-[8px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 stat-badge">Disiplin</span>
                 </div>
                 <div class="relative z-10">
-                    <span class="font-mono font-extrabold text-xl md:text-2xl text-blue-900 leading-none block" id="kpi-persen">100%</span>
-                    <span class="text-[8px] md:text-[9px] text-blue-600 font-semibold block mt-1">Kehadiran</span>
+                    <span class="font-mono font-extrabold text-xl text-blue-600 leading-none block" id="kpi-persen">100%</span>
+                    <span class="text-[8px] text-slate-500 font-semibold block mt-1 stat-subtitle">Kehadiran</span>
                 </div>
-                <i class="fas fa-chart-pie absolute -right-2 -bottom-2 text-4xl text-blue-500/10 pointer-events-none"></i>
             </div>
         </div>
     </div>
