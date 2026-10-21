@@ -239,57 +239,55 @@ input[type="password"]::-ms-clear {
    PENYELARASAN KOTAK PRESENSI MASUK & PULANG DI MODE GELAP
 ==================================================== */
 
-/* 1. Kotak Presensi Masuk (Aksen Soft Blue Glow) */
+/* 1. Kotak Presensi Masuk (Datang) - Aksen Emerald/Hijau */
 .dark-mode-simulated #tab-dashboard #smart-status-card .grid > div:first-child {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, #1e293b 100%) !important;
-    border-color: rgba(59, 130, 246, 0.35) !important;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08) !important;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, #1e293b 100%) !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important; /* Garis Hijau Tegas */
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08) !important;
 }
 
-/* 2. Kotak Presensi Pulang (Aksen Soft Amber/Orange Glow) */
+/* 2. Kotak Presensi Pulang - Aksen Purple/Ungu */
 .dark-mode-simulated #tab-dashboard #smart-status-card .grid > div:last-child {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, #1e293b 100%) !important;
-    border-color: rgba(245, 158, 11, 0.35) !important;
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.08) !important;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, #1e293b 100%) !important;
+    border: 1px solid rgba(168, 85, 247, 0.4) !important; /* Garis Ungu Tegas */
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.08) !important;
 }
 
 /* 3. Label Judul ("Presensi Masuk" & "Presensi Pulang") */
 .dark-mode-simulated #tab-dashboard #smart-status-card .grid span.text-slate-500 {
-    color: #94a3b8 !important; /* Slate terang */
+    color: #94a3b8 !important; 
 }
 
 /* 4. Teks Jam Digital (Bercahaya & Jelas Terbaca) */
-.dark-mode-simulated #tab-dashboard #status-val-masuk {
-    color: #93c5fd !important; /* Biru muda cerah */
-}
-.dark-mode-simulated #tab-dashboard #status-val-pulang {
-    color: #fcd34d !important; /* Amber/oranye muda cerah */
-}
+.dark-mode-simulated #tab-dashboard #status-val-masuk { color: #34d399 !important; }
+.dark-mode-simulated #tab-dashboard #status-val-pulang { color: #c084fc !important; }
 
-/* 5. Teks Keterangan Subtitle ("Gunakan Tombol Bawah" / "Belum Dibuka") */
-.dark-mode-simulated #tab-dashboard #status-sub-masuk {
-    color: #60a5fa !important;
-}
-.dark-mode-simulated #tab-dashboard #status-sub-pulang {
-    color: #fbbf24 !important;
-}
-
-/* 6. Ikon Status Pulang saat Masih Inaktif */
-.dark-mode-simulated #tab-dashboard #smart-status-card .grid > div:last-child .bg-slate-200 {
-    background-color: rgba(245, 158, 11, 0.2) !important;
-    color: #f59e0b !important;
-}
+/* 5. Teks Keterangan Subtitle */
+.dark-mode-simulated #tab-dashboard #status-sub-masuk { color: #6ee7b7 !important; }
+.dark-mode-simulated #tab-dashboard #status-sub-pulang { color: #d8b4fe !important; }
 
 /* ====================================================
-   KARTU STATISTIK & BADGE (MODE GELAP) - FINAL
+   KARTU STATISTIK & BADGE (MODE GELAP) - FINAL WARNA-WARNI
 ==================================================== */
+/* Latar dasar sama untuk semua */
 .dark-mode-simulated .stat-card-hadir,
 .dark-mode-simulated .stat-card-izin,
 .dark-mode-simulated .stat-card-disiplin {
     background-color: #1e293b !important; 
-    /* Garis tipis dibuat lebih tegas/jelas (Opacity 15%) */
-    border-color: rgba(255, 255, 255, 0.15) !important; 
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+}
+
+/* GARIS TEMA BERBEDA UNTUK TIAP KARTU STATISTIK */
+.dark-mode-simulated .stat-card-hadir {
+    border-color: rgba(16, 185, 129, 0.4) !important; /* Garis Hijau */
+}
+.dark-mode-simulated .stat-card-izin {
+    border-color: rgba(245, 158, 11, 0.4) !important; /* Garis Kuning/Amber */
+}
+.dark-mode-simulated .stat-card-disiplin {
+    border-color: rgba(59, 130, 246, 0.4) !important; /* Garis Biru */
 }
 
 /* Warna Teks Angka Utama (Bercahaya) */
@@ -300,57 +298,21 @@ input[type="password"]::-ms-clear {
 /* Warna Subtitle */
 .dark-mode-simulated .stat-subtitle { color: #94a3b8 !important; }
 
-/* Warna Badge Kecil di Kanan Atas Kartu */
-.dark-mode-simulated .stat-badge {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.15) !important;
-    color: #cbd5e1 !important;
+/* Warna Badge Kecil di Kanan Atas Kartu (Ikut tema masing-masing) */
+.dark-mode-simulated .stat-card-hadir .stat-badge {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+    color: #6ee7b7 !important;
 }
-
-/* Pewarnaan Badge Semester Aktif */
-.dark-mode-simulated .badge-semester {
-    background-color: rgba(99, 102, 241, 0.2) !important;
-    border-color: rgba(99, 102, 241, 0.3) !important;
-    color: #818cf8 !important;
+.dark-mode-simulated .stat-card-izin .stat-badge {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    border-color: rgba(245, 158, 11, 0.2) !important;
+    color: #fcd34d !important;
 }
-
-/* Menyesuaikan Ikon Watermark agar membaur di Mode Gelap */
-.dark-mode-simulated .watermark-icon {
-    color: rgba(255, 255, 255, 0.05) !important;
-}
-
-/* Styling untuk Badge "Lihat Jadwal" di Mode Gelap */
-.dark-mode-simulated .badge-jadwal {
-    background-color: rgba(168, 85, 247, 0.15) !important;
-    border-color: rgba(168, 85, 247, 0.3) !important;
-    color: #d8b4fe !important;
-}
-
-/* Memperbaiki Latar Kotak Pengumuman Bawah agar ikutan Gelap */
-.dark-mode-simulated #tab-dashboard [class*="from-rose-50"] {
-    background: #1e293b !important;
-    border-color: #334155 !important;
-}
-
-/* 4. Teks Keterangan Bawah (Hari Sekolah, Pengajuan, Kehadiran) */
-.dark-mode-simulated #tab-dashboard [class*="from-emerald-50"] .text-emerald-700\/80,
-.dark-mode-simulated #tab-dashboard [class*="from-amber-700\/80"],
-.dark-mode-simulated #tab-dashboard [class*="from-blue-700\/80"],
-.dark-mode-simulated #tab-dashboard [class*="text-emerald-700/80"],
-.dark-mode-simulated #tab-dashboard [class*="text-amber-700/80"],
-.dark-mode-simulated #tab-dashboard [class*="text-blue-700/80"] {
-    color: #94a3b8 !important; /* Slate terang */
-}
-
-/* 5. Watermark Icon Belakang agar Menyatu Samar */
-.dark-mode-simulated #tab-dashboard [class*="from-emerald-50"] i.fa-check-circle {
-    color: rgba(16, 185, 129, 0.15) !important;
-}
-.dark-mode-simulated #tab-dashboard [class*="from-amber-50"] i.fa-envelope-open-text {
-    color: rgba(245, 158, 11, 0.15) !important;
-}
-.dark-mode-simulated #tab-dashboard [class*="from-blue-50"] i.fa-chart-pie {
-    color: rgba(59, 130, 246, 0.15) !important;
+.dark-mode-simulated .stat-card-disiplin .stat-badge {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-color: rgba(59, 130, 246, 0.2) !important;
+    color: #93c5fd !important;
 }
 
 /* 2. Perlindungan Tombol Grid Menu Siswa agar tetap Cerah & Bergradasi */
