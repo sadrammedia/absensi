@@ -659,11 +659,11 @@ async function startCamera() {
         videoElement.srcObject = cameraStream;
         videoElement.classList.remove('hidden'); 
         
-        // --- PERBAIKAN: Memaksa efek cermin dengan properti komplit browser ---
+        // --- TEKNIK WRAPPER: Membalikkan elemen lewat pembungkus kelas container ---
         videoElement.style.transform = 'scaleX(-1)';
-        videoElement.style.webkitTransform = 'scaleX(-1)'; // Kompatibilitas browser lama/Safari
-        videoElement.style.transformOrigin = 'center';
-        // --------------------------------------------------------------------
+        videoElement.style.webkitTransform = 'scaleX(-1)';
+        videoElement.style.transformOrigin = 'center center';
+        // -----------------------------------------------------------------------
 
         scanTitle.innerText = "Posisikan Wajah";
         scanText.innerText = "Kamera Aktif & Siap Jepret";
@@ -842,20 +842,21 @@ async function handleAmbilFoto() {
         canvas.height = targetHeight;
         const ctx = canvas.getContext('2d');
         
-        // Canvas menggambar foto asli (TIDAK terbalik) dari lensa
+        // Canvas menggambar foto asli (TIDAK terbalik / normal) langsung dari lensa
         ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
         
         const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
         const res = await fetch(dataUrl);
         currentCapturedBlob = await res.blob();
 
-        // Tampilkan gambar pratinjau di layar
+        // Tampilkan gambar pratinjau di layar frame
         const imgPreview = document.getElementById('camera-preview-captured');
         imgPreview.src = dataUrl;
         
-        // --- PERBAIKAN: Pratinjau di layar ikut dicerminkan secara konsisten ---
+        // --- TEKNIK WRAPPER: Menyamakan efek cermin pada pratinjau jepretan ---
         imgPreview.style.transform = 'scaleX(-1)';
         imgPreview.style.webkitTransform = 'scaleX(-1)';
+        imgPreview.style.transformOrigin = 'center center';
         // -------------------------------------------------------------------
         
         imgPreview.classList.remove('hidden');
