@@ -281,26 +281,29 @@ input[type="password"]::-ms-clear {
 }
 
 /* ====================================================
-   KARTU STATISTIK SEPERTI GAMBAR 2 (MODE GELAP)
+   KARTU STATISTIK & BADGE (MODE GELAP) - FINAL
 ==================================================== */
 .dark-mode-simulated .stat-card-hadir,
 .dark-mode-simulated .stat-card-izin,
 .dark-mode-simulated .stat-card-disiplin {
-    background-color: #1e293b !important; /* Latar gelap Slate 800 */
-    border-color: rgba(255, 255, 255, 0.05) !important; /* Border super tipis */
+    background-color: #1e293b !important; 
+    /* Garis tipis dibuat lebih tegas/jelas (Opacity 15%) */
+    border-color: rgba(255, 255, 255, 0.15) !important; 
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Warna Teks Angka Utama (Bercahaya sesuai ikon) */
+/* Warna Teks Angka Utama (Bercahaya) */
 .dark-mode-simulated .stat-card-hadir span.font-mono { color: #34d399 !important; }
 .dark-mode-simulated .stat-card-izin span.font-mono { color: #fbbf24 !important; }
 .dark-mode-simulated .stat-card-disiplin span.font-mono { color: #60a5fa !important; }
 
-/* Warna Subtitle & Latar Badge Kecil di Kanan Atas */
+/* Warna Subtitle */
 .dark-mode-simulated .stat-subtitle { color: #94a3b8 !important; }
+
+/* Warna Badge Kecil di Kanan Atas Kartu */
 .dark-mode-simulated .stat-badge {
     background-color: rgba(255, 255, 255, 0.1) !important;
-    border-color: transparent !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
     color: #cbd5e1 !important;
 }
 
@@ -309,6 +312,18 @@ input[type="password"]::-ms-clear {
     background-color: rgba(99, 102, 241, 0.2) !important;
     border-color: rgba(99, 102, 241, 0.3) !important;
     color: #818cf8 !important;
+}
+
+/* Menyesuaikan Ikon Watermark agar membaur di Mode Gelap */
+.dark-mode-simulated .watermark-icon {
+    color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Styling untuk Badge "Lihat Jadwal" di Mode Gelap */
+.dark-mode-simulated .badge-jadwal {
+    background-color: rgba(168, 85, 247, 0.15) !important;
+    border-color: rgba(168, 85, 247, 0.3) !important;
+    color: #d8b4fe !important;
 }
 
 /* Memperbaiki Latar Kotak Pengumuman Bawah agar ikutan Gelap */
