@@ -659,9 +659,11 @@ async function startCamera() {
         videoElement.srcObject = cameraStream;
         videoElement.classList.remove('hidden'); 
         
-        // --- KODE BARU: Membalikkan layar kamera layaknya cermin ---
+        // --- PERBAIKAN: Memaksa efek cermin dengan properti komplit browser ---
         videoElement.style.transform = 'scaleX(-1)';
-        // -----------------------------------------------------------
+        videoElement.style.webkitTransform = 'scaleX(-1)'; // Kompatibilitas browser lama/Safari
+        videoElement.style.transformOrigin = 'center';
+        // --------------------------------------------------------------------
 
         scanTitle.innerText = "Posisikan Wajah";
         scanText.innerText = "Kamera Aktif & Siap Jepret";
@@ -847,12 +849,13 @@ async function handleAmbilFoto() {
         const res = await fetch(dataUrl);
         currentCapturedBlob = await res.blob();
 
-        // Tampilkan gambar pratinjau di layar frame hexagon
+        // Tampilkan gambar pratinjau di layar
         const imgPreview = document.getElementById('camera-preview-captured');
         imgPreview.src = dataUrl;
         
-        // --- KODE BARU: Pratinjau di layar siswa ikut dibuat efek cermin ---
+        // --- PERBAIKAN: Pratinjau di layar ikut dicerminkan secara konsisten ---
         imgPreview.style.transform = 'scaleX(-1)';
+        imgPreview.style.webkitTransform = 'scaleX(-1)';
         // -------------------------------------------------------------------
         
         imgPreview.classList.remove('hidden');
