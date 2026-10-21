@@ -200,20 +200,22 @@ input[type="password"]::-ms-clear {
 /* Penyesuaian teks di mode gelap */
 .dark-mode-simulated .text-gray-800,
 .dark-mode-simulated .text-slate-800,
+.dark-mode-simulated .text-slate-700, /* Kapsul Jam & Tanggal */
 .dark-mode-simulated .text-gray-900,
 .dark-mode-simulated .setting-item-title {
     color: #f8fafc !important;
 }
 
-.dark-mode-simulated .text-gray-500,
-.dark-mode-simulated .text-gray-600,
-.dark-mode-simulated .setting-item-desc {
-    color: #94a3b8 !important;
+.dark-mode-simulated .border-gray-50,
+.dark-mode-simulated .border-gray-100,
+.dark-mode-simulated .border-slate-100,
+.dark-mode-simulated .border-slate-200 {
+    border-color: #334155 !important;
 }
 
-.dark-mode-simulated .text-gray-400,
-.dark-mode-simulated .setting-group-title {
-    color: #64748b !important;
+/* Memperbaiki link ungu (Jadwal) agar cerah menyala */
+.dark-mode-simulated .text-purple-600 {
+    color: #c084fc !important; 
 }
 
 .dark-mode-simulated .border-gray-50,
@@ -279,55 +281,40 @@ input[type="password"]::-ms-clear {
 }
 
 /* ====================================================
-   PENYEMPURNAAN KARTU STATISTIK DASHBOARD DI MODE GELAP
+   KARTU STATISTIK SEPERTI GAMBAR 2 (MODE GELAP)
 ==================================================== */
-/* 1. Latar Kartu & Border Glow Halus untuk masing-masing Status */
-.dark-mode-simulated #tab-dashboard [class*="from-emerald-50"] {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, #1e293b 100%) !important;
-    border-color: rgba(16, 185, 129, 0.35) !important;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08) !important;
+.dark-mode-simulated .stat-card-hadir,
+.dark-mode-simulated .stat-card-izin,
+.dark-mode-simulated .stat-card-disiplin {
+    background-color: #1e293b !important; /* Latar gelap Slate 800 */
+    border-color: rgba(255, 255, 255, 0.05) !important; /* Border super tipis */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
 }
 
-.dark-mode-simulated #tab-dashboard [class*="from-amber-50"] {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, #1e293b 100%) !important;
-    border-color: rgba(245, 158, 11, 0.35) !important;
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.08) !important;
+/* Warna Teks Angka Utama (Bercahaya sesuai ikon) */
+.dark-mode-simulated .stat-card-hadir span.font-mono { color: #34d399 !important; }
+.dark-mode-simulated .stat-card-izin span.font-mono { color: #fbbf24 !important; }
+.dark-mode-simulated .stat-card-disiplin span.font-mono { color: #60a5fa !important; }
+
+/* Warna Subtitle & Latar Badge Kecil di Kanan Atas */
+.dark-mode-simulated .stat-subtitle { color: #94a3b8 !important; }
+.dark-mode-simulated .stat-badge {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: transparent !important;
+    color: #cbd5e1 !important;
 }
 
-.dark-mode-simulated #tab-dashboard [class*="from-blue-50"] {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, #1e293b 100%) !important;
-    border-color: rgba(59, 130, 246, 0.35) !important;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08) !important;
+/* Pewarnaan Badge Semester Aktif */
+.dark-mode-simulated .badge-semester {
+    background-color: rgba(99, 102, 241, 0.2) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+    color: #818cf8 !important;
 }
 
-/* 2. Angka Utama (Bercahaya Lembut / Neon Soft) */
-.dark-mode-simulated #tab-dashboard #kpi-hadir {
-    color: #34d399 !important; /* Emerald terang */
-}
-.dark-mode-simulated #tab-dashboard #kpi-izin {
-    color: #fbbf24 !important; /* Amber terang */
-}
-.dark-mode-simulated #tab-dashboard #kpi-persen {
-    color: #60a5fa !important; /* Sky/Blue terang */
-}
-
-/* 3. Badge Kecil Kategori (Hadir, Izin, Disiplin) */
-.dark-mode-simulated #tab-dashboard [class*="from-emerald-50"] .bg-white\/80 {
-    background-color: rgba(16, 185, 129, 0.2) !important;
-    color: #6ee7b7 !important;
-    border-color: rgba(16, 185, 129, 0.3) !important;
-}
-
-.dark-mode-simulated #tab-dashboard [class*="from-amber-50"] .bg-white\/80 {
-    background-color: rgba(245, 158, 11, 0.2) !important;
-    color: #fcd34d !important;
-    border-color: rgba(245, 158, 11, 0.3) !important;
-}
-
-.dark-mode-simulated #tab-dashboard [class*="from-blue-50"] .bg-white\/80 {
-    background-color: rgba(59, 130, 246, 0.2) !important;
-    color: #93c5fd !important;
-    border-color: rgba(59, 130, 246, 0.3) !important;
+/* Memperbaiki Latar Kotak Pengumuman Bawah agar ikutan Gelap */
+.dark-mode-simulated #tab-dashboard [class*="from-rose-50"] {
+    background: #1e293b !important;
+    border-color: #334155 !important;
 }
 
 /* 4. Teks Keterangan Bawah (Hari Sekolah, Pengajuan, Kehadiran) */
