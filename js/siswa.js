@@ -912,7 +912,7 @@ function resetUIKeModeJepret() {
     document.getElementById('scan-text').className = "text-green-400 font-semibold text-sm";
 }
 
-// Alur 3: Kirim Foto ke Cloud Supabase (Lebih Bersih & Efisien)
+// Alur 3: Kirim Foto ke Cloud Supabase (Perisai Ganda: Wajib Foto)
 async function processAbsenToCloud() {
     const btnSubmit = document.getElementById('btn-submit-absen');
     const btnRetake = document.getElementById('btn-retake-photo');
@@ -924,38 +924,59 @@ async function processAbsenToCloud() {
 
     let dateObj;
 
-    // --- CUKUP AMBIL WAKTU SERVER (Tanpa perlu deteksi selisih lagi di sini) ---
+    // --- 1. CEK WAKTU SERVER ---
     try {
         dateObj = await getServerTime(); 
     } catch (e) {
-        // Blokir jika tiba-tiba internet mati saat mau kirim foto
         showToast('⚠️ Gagal terhubung ke server waktu. Pastikan internet stabil.', true);
         btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
         btnSubmit.disabled = false;
         btnRetake.disabled = false;
         return; 
     }
-    // --------------------------------------------------------------------------
 
-    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim Data...';
-    
-    // Ekstrak tanggal dari dateObj (Waktu Server Asli)
+    // --- 2. VALIDASI KEBERADAAN FOTO (BLOKIR JIKA KOSONG) ---
+    if (!currentCapturedBlob) {
+        showToast('⚠️ Foto wajib disertakan! Silakan ulangi pengambilan foto.', true);
+        btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
+        btnSubmit.disabled = false;
+        btnRetake.disabled = false;
+        return; // Hentikan eksekusi
+    }
+
+    // Ekstrak tanggal
     const yyyy = dateObj.getFullYear();
     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(dateObj.getDate()).padStart(2, '0');
     const tglHariIni = `${yyyy}-${mm}-${dd}`; 
     const jamSekarang = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+    let urlFotoBukti = null;
+
+    // --- 3. PROSES UNGGAH FOTO (ALL OR NOTHING) ---
     try {
-        let urlFotoBukti = null;
-        if (currentCapturedBlob) {
-            try {
-                const fileName = `absen_${currentUser.nis}_${Date.now()}.jpg`;
-                urlFotoBukti = await uploadFileToSupabase(currentCapturedBlob, 'bukti_absen', fileName);
-            } catch (e) {
-                console.error("Upload foto bukti gagal, lanjut absen tanpa foto:", e);
-            }
+        btnSubmit.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin"></i> Mengunggah Foto...';
+        const fileName = `absen_${currentUser.nis}_${Date.now()}.jpg`;
+        urlFotoBukti = await uploadFileToSupabase(currentCapturedBlob, 'bukti_absen', fileName);
+        
+        // Jika URL gagal didapat dari Supabase Storage
+        if (!urlFotoBukti) {
+            throw new Error("Gagal mendapatkan link URL foto dari server.");
         }
+    } catch (e) {
+        console.error("Upload foto bukti gagal:", e);
+        showToast('⚠️ Gagal mengunggah foto. Pastikan internet stabil dan coba lagi.', true);
+        
+        // KEMBALIKAN TOMBOL, JANGAN LANJUTKAN KE DATABASE TEKS!
+        btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
+        btnSubmit.disabled = false;
+        btnRetake.disabled = false;
+        return; // <--- INI KUNCI PERISAINYA: Hentikan fungsi di sini!
+    }
+
+    // --- 4. PENYIMPANAN KE DATABASE (Hanya jalan jika foto 100% aman) ---
+    try {
+        btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan Absen...';
 
         const { data: existData, error: errCek } = await db.from('tabel_presensi')
             .select('*')
@@ -975,12 +996,13 @@ async function processAbsenToCloud() {
                     kelas: currentUser.kelas || '-',
                     tanggal: tglHariIni,
                     jam_masuk: jamSekarang,
-                    status_masuk: 'Hadir'
+                    status_masuk: 'Hadir',
+                    foto_masuk: urlFotoBukti // Pasti terisi
                 };
-                if (urlFotoBukti) payload.foto_masuk = urlFotoBukti;
 
                 const { error } = await db.from('tabel_presensi').insert([payload]);
                 if (error) throw error;
+                
                 playBeepSuccess();
                 triggerHapticSuccess();
                 showToast('Absen Masuk Berhasil!');
@@ -990,11 +1012,15 @@ async function processAbsenToCloud() {
             if (existData && existData.jam_pulang) {
                 showToast('Anda sudah absen pulang hari ini!', true);
             } else if (existData && !existData.jam_pulang) {
-                const payload = { jam_pulang: jamSekarang, status_pulang: 'Hadir' };
-                if (urlFotoBukti) payload.foto_pulang = urlFotoBukti;
+                const payload = { 
+                    jam_pulang: jamSekarang, 
+                    status_pulang: 'Hadir',
+                    foto_pulang: urlFotoBukti // Pasti terisi
+                };
 
                 const { error } = await db.from('tabel_presensi').update(payload).eq('id', existData.id); 
                 if (error) throw error;
+                
                 playBeepSuccess();
                 triggerHapticSuccess();
                 showToast('Absen Pulang Berhasil!');
@@ -1005,9 +1031,9 @@ async function processAbsenToCloud() {
                     kelas: currentUser.kelas || '-',
                     tanggal: tglHariIni,
                     jam_pulang: jamSekarang,
-                    status_pulang: 'Hadir'
+                    status_pulang: 'Hadir',
+                    foto_pulang: urlFotoBukti // Pasti terisi
                 };
-                if (urlFotoBukti) payload.foto_pulang = urlFotoBukti;
 
                 const { error } = await db.from('tabel_presensi').insert([payload]);
                 if (error) throw error;
@@ -1019,7 +1045,7 @@ async function processAbsenToCloud() {
         }
     } catch (err) {
         console.error(err);
-        showToast(`Gagal: ${err.message || 'Terjadi kesalahan jaringan.'}`, true);
+        showToast(`Gagal: ${err.message || 'Terjadi kesalahan jaringan saat menyimpan teks.'}`, true);
     } finally {
         closeScanner();
 
